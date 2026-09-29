@@ -1,0 +1,810 @@
+/* ==========================================================================
+   ROADGUARD HOMEPAGE DESIGN SYSTEM — POLISHED PASS
+   Theme: Premium Futuristic Civic-Tech / Spatial Infrastructure Platform
+   Focused on: Zero Horizontal Overflow, Cinematic Viewport Rhythm,
+   Refined Visual Hierarchy, and Harmonious Map Integration
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. HERO SECTION & AMBIENT SPATIAL CANVAS
+   -------------------------------------------------------------------------- */
+.hero-spatial-container {
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 15%, rgba(14, 165, 233, 0.08) 0%, rgba(11, 15, 25, 0) 65%),
+              radial-gradient(circle at 85% 55%, rgba(239, 68, 68, 0.035) 0%, rgba(11, 15, 25, 0) 50%),
+              #070A12;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+.hero-spatial-grid-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 35%, black 20%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 35%, black 20%, transparent 85%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-content-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding-top: 40px;
+  padding-bottom: 36px;
+}
+
+/* 2-Column Responsive Hero Grid */
+.hero-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .hero-main-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.hero-left-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Hero Badge Pill */
+.civic-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px -2px rgba(0, 0, 0, 0.5), 0 0 12px -2px rgba(56, 189, 248, 0.12);
+  margin-bottom: 18px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.civic-badge-pill:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.2);
+}
+
+.live-beacon {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #38BDF8;
+  box-shadow: 0 0 8px #38BDF8;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.live-beacon::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid #38BDF8;
+  animation: beacon-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes beacon-ping {
+  0% { transform: scale(0.8); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.civic-badge-text {
+  font-size: 0.71875rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #CBD5E1;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.civic-badge-tag {
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.14);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+/* Hero Typography */
+.hero-headline {
+  font-size: clamp(2rem, 3.8vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: #F8FAFC;
+  margin-bottom: 16px;
+  text-wrap: balance;
+  max-width: 100%;
+}
+
+.hero-headline-accent {
+  background: linear-gradient(135deg, #38BDF8 0%, #00F0FF 50%, #60A5FA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  position: relative;
+}
+
+.hero-subheading {
+  font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
+  color: #94A3B8;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  max-width: 580px;
+}
+
+/* Hero Buttons */
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.btn-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 24px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #070A12;
+  background: linear-gradient(135deg, #38BDF8 0%, #00E5FF 100%);
+  border: 1px solid #7DD3FC;
+  border-radius: 9px;
+  box-shadow: 0 4px 14px -2px rgba(56, 189, 248, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-hero-primary:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #7DD3FC 0%, #38BDF8 100%);
+  box-shadow: 0 6px 20px -2px rgba(56, 189, 248, 0.55), 0 0 16px rgba(0, 229, 255, 0.25);
+}
+
+.btn-hero-primary:active {
+  transform: translateY(0);
+}
+
+.btn-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #E2E8F0;
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 9px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-hero-secondary:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(30, 41, 59, 0.9);
+  color: #FFFFFF;
+}
+
+.btn-hero-secondary:active {
+  transform: translateY(0);
+}
+
+/* Hero Key Indicators Bar — Visually Quieter */
+.hero-specs-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px 22px;
+  flex-wrap: wrap;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hero-spec-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.hero-spec-icon {
+  color: #38BDF8;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   2. SPATIAL VISUALIZATION CANVAS (REFINED & DEEP)
+   -------------------------------------------------------------------------- */
+.hero-canvas-frame {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 400px;
+  border-radius: 14px;
+  background: rgba(11, 15, 25, 0.75);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .hero-canvas-frame {
+    height: 350px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-canvas-frame {
+    height: 290px;
+  }
+}
+
+.hero-canvas-hud-header {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hud-title-tag {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace, sans-serif;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #38BDF8;
+  background: rgba(11, 15, 25, 0.88);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  padding: 3px 8px;
+  border-radius: 5px;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-status-badge {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace, sans-serif;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #34D399;
+  background: rgba(6, 78, 59, 0.45);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 3px 7px;
+  border-radius: 5px;
+  backdrop-filter: blur(8px);
+}
+
+.hero-canvas-hud-footer {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace, sans-serif;
+  font-size: 0.625rem;
+  color: #64748B;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   3. FLOATING TELEMETRY HUD
+   -------------------------------------------------------------------------- */
+.telemetry-hud-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .telemetry-hud-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .telemetry-hud-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.telemetry-card {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 10px;
+  padding: 14px 16px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+  box-sizing: border-box;
+}
+
+.telemetry-card:hover {
+  border-color: rgba(56, 189, 248, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 12px rgba(56, 189, 248, 0.08);
+}
+
+.telemetry-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--card-accent, #38BDF8);
+  opacity: 0.7;
+}
+
+.telemetry-label {
+  font-size: 0.65625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94A3B8;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.telemetry-value {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #F8FAFC;
+  line-height: 1.1;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace, sans-serif;
+}
+
+.telemetry-desc {
+  font-size: 0.71875rem;
+  color: #64748B;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------------------------------
+   4. SECTION STORY RHYTHM & TRANSITIONS
+   -------------------------------------------------------------------------- */
+.story-section {
+  position: relative;
+  padding: 64px 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .story-section {
+    padding: 48px 0;
+  }
+}
+
+.story-section-connector {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.35), transparent);
+}
+
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.71875rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #38BDF8;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace, sans-serif;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: clamp(1.75rem, 2.8vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #F8FAFC;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.section-subtitle {
+  font-size: 0.96875rem;
+  color: #94A3B8;
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+/* --------------------------------------------------------------------------
+   5. THE ROAD SAFETY PROBLEM CARDS
+   -------------------------------------------------------------------------- */
+.problem-card {
+  background: rgba(17, 24, 39, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 24px 20px;
+  position: relative;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.problem-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.6);
+}
+
+.problem-card-critical:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 10px 24px -4px rgba(239, 68, 68, 0.12);
+}
+
+.problem-card-high:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 10px 24px -4px rgba(245, 158, 11, 0.12);
+}
+
+.problem-card-cyan:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 10px 24px -4px rgba(56, 189, 248, 0.12);
+}
+
+.problem-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   6. THE 5-STAGE WORKFLOW (REPORT -> PRIORITIZE -> VISUALIZE -> ACT -> TRACK)
+   -------------------------------------------------------------------------- */
+.workflow-rail {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  position: relative;
+  margin-top: 36px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1180px) {
+  .workflow-rail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .workflow-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .workflow-rail {
+    grid-template-columns: 1fr;
+  }
+}
+
+.workflow-node {
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 11px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.workflow-node:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-2px);
+  background: rgba(22, 30, 48, 0.9);
+  box-shadow: 0 8px 20px -2px rgba(0, 0, 0, 0.5), 0 0 14px rgba(56, 189, 248, 0.1);
+}
+
+.workflow-step-num {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.workflow-step-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin-bottom: 6px;
+}
+
+.workflow-step-desc {
+  font-size: 0.78125rem;
+  color: #94A3B8;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* --------------------------------------------------------------------------
+   7. PRIORITY FORMULA INSPECTOR (RESPONSIVE & UNCLIPPED)
+   -------------------------------------------------------------------------- */
+.formula-container {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 14px;
+  padding: 24px;
+  margin-top: 32px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .formula-container {
+    padding: 18px 14px;
+  }
+}
+
+.formula-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+  margin-bottom: 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .formula-controls-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .formula-controls-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formula-factor-bar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1180px) {
+  .formula-factor-bar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .formula-factor-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .formula-factor-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formula-factor-chip {
+  background: rgba(11, 15, 25, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.formula-factor-chip:hover {
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.formula-factor-chip-detail {
+  font-size: 0.6875rem;
+  color: #64748B;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+/* --------------------------------------------------------------------------
+   8. SAFETY MAP PREVIEW CONTAINER & INTEGRATED STYLING
+   -------------------------------------------------------------------------- */
+.map-preview-terminal {
+  border-radius: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  background: #0B0F19;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.06);
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Refined Leaflet Tile Integration to harmonize bright OSM tiles with dark mode */
+.map-preview-terminal .leaflet-container {
+  filter: brightness(0.88) contrast(1.08) saturate(0.85);
+  transition: filter 0.3s ease;
+}
+
+.map-preview-terminal:hover .leaflet-container {
+  filter: brightness(0.93) contrast(1.06) saturate(0.92);
+}
+
+.map-terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+  flex-wrap: wrap;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.map-terminal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  letter-spacing: -0.01em;
+}
+
+.map-terminal-indicators {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.71875rem;
+  flex-wrap: wrap;
+}
+
+.map-terminal-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* --------------------------------------------------------------------------
+   9. CALL TO ACTION HUB
+   -------------------------------------------------------------------------- */
+.cta-hub-card {
+  background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.1) 0%, rgba(15, 23, 42, 0.95) 75%),
+              #0B0F19;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 18px;
+  padding: 48px 28px;
+  text-align: center;
+  box-shadow: 0 16px 50px -15px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.08);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cta-hub-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #38BDF8, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   10. REDUCED MOTION SAFEGUARDS
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

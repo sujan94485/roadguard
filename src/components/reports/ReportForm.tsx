@@ -10,9 +10,21 @@ import { ImageUploadWithAI } from './ImageUploadWithAI';
 import { calculateHazardPriority } from '../../services/priorityEngine';
 import { uploadHazardEvidence } from '../../services/storageService';
 import { PriorityBadge } from '../common/Badge';
-
 import { DEFAULT_MAP_CENTER } from '../../services/mapConfig';
-import { AlertCircle, CheckCircle, Calculator, Send, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle,
+  Calculator,
+  Send,
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Sliders,
+  Check,
+  CheckCircle2,
+  Cpu
+} from 'lucide-react';
 
 interface ReportFormProps {
   onSuccess: (reportCode: string) => void;
@@ -54,6 +66,23 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onSuccess }) => {
       existing_cluster_count: 0
     });
   }, [hazardType, severity, trafficExposure, vulnerabilityLevel]);
+
+  // Dynamic Progress States
+  const stepStates = useMemo(() => {
+    const isStep1Done = Boolean(hazardType);
+    const isStep2Done = Boolean(locationName.trim() && latitude && longitude);
+    const isStep3Done = Boolean(severity && description.trim().length >= 10);
+    const isStep4Done = Boolean(imageFile || imagePreview);
+    const isReadyForSubmit = isStep1Done && isStep2Done && isStep3Done;
+
+    return {
+      step1: isStep1Done,
+      step2: isStep2Done,
+      step3: isStep3Done,
+      step4: isStep4Done,
+      ready: isReadyForSubmit
+    };
+  }, [hazardType, locationName, latitude, longitude, severity, description, imageFile, imagePreview]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,18 +161,34 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onSuccess }) => {
     }
   };
 
+  const getPriorityColor = (level: string) => {
+    switch (level) {
+      case 'critical':
+        return '#EF4444';
+      case 'high':
+        return '#F97316';
+      case 'medium':
+        return '#F59E0B';
+      default:
+        return '#10B981';
+    }
+  };
 
-  // If submitted, show confirmation state
+  const priorityColor = getPriorityColor(livePriority.level);
+
+  // If submitted, show confirmation receipt state
   if (submittedCode) {
     return (
       <div
         className="card"
         style={{
-          maxWidth: '640px',
+          maxWidth: '680px',
           margin: '0 auto',
           textAlign: 'center',
-          padding: '40px 24px',
-          borderColor: '#10B981'
+          padding: '48px 32px',
+          borderColor: '#10B981',
+          background: 'radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.95) 75%), #0B0F19',
+          boxShadow: '0 20px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.12)'
         }}
       >
         <div
@@ -152,45 +197,66 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onSuccess }) => {
             height: '64px',
             borderRadius: '50%',
             backgroundColor: 'rgba(16, 185, 129, 0.15)',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 16px auto',
-            color: '#10B981'
+            margin: '0 auto 18px auto',
+            color: '#10B981',
+            boxShadow: '0 0 20px rgba(16, 185, 129, 0.25)'
           }}
         >
           <CheckCircle size={36} />
         </div>
 
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Hazard Report Submitted</h2>
-        <p style={{ color: '#94A3B8', fontSize: '0.9375rem', marginBottom: '24px' }}>
-          Your report has been entered into the triage system and prioritized for review.
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.6875rem', fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+          <CheckCircle2 size={13} />
+          <span>TRIAGE RECEIPT ISSUED</span>
+        </div>
+
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#F8FAFC', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+          Hazard Report Submitted
+        </h2>
+        <p style={{ color: '#94A3B8', fontSize: '0.9375rem', marginBottom: '28px', maxWidth: '520px', margin: '0 auto 28px auto' }}>
+          Your report has been entered into the municipal triage queue with deterministic priority scoring. Retain your tracking code to follow resolution milestones.
         </p>
 
+        {/* Tracking ID Display Box */}
         <div
           style={{
-            backgroundColor: '#0F172A',
-            border: '1px solid #1E293B',
-            borderRadius: '8px',
-            padding: '16px',
-            marginBottom: '28px'
+            backgroundColor: 'rgba(11, 15, 25, 0.9)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '28px',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)'
           }}
         >
-          <div style={{ fontSize: '0.75rem', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Report Tracking ID
+          <div style={{ fontSize: '0.71875rem', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+            AUDITABLE TRACKING CODE
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#38BDF8', letterSpacing: '0.02em', margin: '4px 0' }}>
+          <div
+            style={{
+              fontSize: '2rem',
+              fontWeight: 800,
+              color: '#38BDF8',
+              letterSpacing: '0.04em',
+              margin: '6px 0',
+              fontFamily: 'JetBrains Mono, monospace'
+            }}
+          >
             {submittedCode}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+            <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Calculated Priority:</span>
             <PriorityBadge level={livePriority.level} score={livePriority.score} />
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
-          <button className="btn btn-primary" onClick={() => onSuccess(submittedCode)}>
-            <span>Track Resolution Status</span>
-            <ArrowRight size={16} />
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <button className="btn btn-primary btn-lg" onClick={() => onSuccess(submittedCode)}>
+            <span>Track Resolution Lifecycle</span>
+            <ArrowRight size={17} />
           </button>
         </div>
       </div>
@@ -198,20 +264,52 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onSuccess }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* ==================================================================
+          GUIDED PROGRESS RAIL
+          ================================================================== */}
+      <div className="guided-progress-rail" role="navigation" aria-label="Incident Intake Progress">
+        <div className={`progress-rail-step ${stepStates.step1 ? 'completed' : 'active'}`}>
+          <div className="step-num-pill">{stepStates.step1 ? <Check size={11} strokeWidth={3} /> : '01'}</div>
+          <span className="step-name-text">01 HAZARD</span>
+        </div>
+
+        <div className={`progress-rail-step ${stepStates.step2 ? 'completed' : stepStates.step1 ? 'active' : ''}`}>
+          <div className="step-num-pill">{stepStates.step2 ? <Check size={11} strokeWidth={3} /> : '02'}</div>
+          <span className="step-name-text">02 LOCATION</span>
+        </div>
+
+        <div className={`progress-rail-step ${stepStates.step3 ? 'completed' : stepStates.step2 ? 'active' : ''}`}>
+          <div className="step-num-pill">{stepStates.step3 ? <Check size={11} strokeWidth={3} /> : '03'}</div>
+          <span className="step-name-text">03 SEVERITY</span>
+        </div>
+
+        <div className={`progress-rail-step ${stepStates.step4 ? 'completed' : stepStates.step3 ? 'active' : ''}`}>
+          <div className="step-num-pill">{stepStates.step4 ? <Check size={11} strokeWidth={3} /> : '04'}</div>
+          <span className="step-name-text">04 EVIDENCE</span>
+        </div>
+
+        <div className={`progress-rail-step ${stepStates.ready ? 'active' : ''}`}>
+          <div className="step-num-pill">{stepStates.ready ? <Check size={11} strokeWidth={3} /> : '05'}</div>
+          <span className="step-name-text">05 REVIEW</span>
+        </div>
+      </div>
+
+      {/* Error Banner */}
       {formErrors.length > 0 && (
         <div
           style={{
             backgroundColor: 'rgba(239, 68, 68, 0.15)',
             border: '1px solid #DC2626',
-            borderRadius: '8px',
+            borderRadius: '10px',
             padding: '14px 18px',
             color: '#FCA5A5',
-            fontSize: '0.875rem'
+            fontSize: '0.875rem',
+            marginBottom: '24px'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, marginBottom: '6px' }}>
-            <AlertCircle size={18} />
+            <AlertCircle size={18} color="#EF4444" />
             <span>Please correct the following:</span>
           </div>
           <ul style={{ paddingLeft: '24px', margin: 0 }}>
@@ -222,34 +320,63 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onSuccess }) => {
         </div>
       )}
 
-      {/* 1. Hazard Type */}
-      <div className="card">
-        <h3 style={{ fontSize: '1.125rem', marginBottom: '4px' }}>1. What type of hazard is it?</h3>
-        <p style={{ fontSize: '0.8125rem', color: '#94A3B8', marginBottom: '14px' }}>
-          Select the option that best describes the road safety issue.
-        </p>
+      {/* ==================================================================
+          STAGE 01: HAZARD CLASSIFICATION
+          ================================================================== */}
+      <div className="intake-stage-card">
+        <div className="stage-header">
+          <div>
+            <div className="stage-tag">
+              <span>STAGE 01</span>
+              <span>•</span>
+              <span>CLASSIFICATION</span>
+            </div>
+            <h2 className="stage-title">What type of road hazard is it?</h2>
+            <p className="stage-desc">
+              Select the classification that most accurately characterizes the road surface, signal, or lighting condition.
+            </p>
+          </div>
+        </div>
+
         <HazardTypeSelector selectedType={hazardType} onSelect={setHazardType} />
       </div>
 
-      {/* 2. Location */}
-      <div className="card">
-        <h3 style={{ fontSize: '1.125rem', marginBottom: '4px' }}>2. Where is it located?</h3>
-        <p style={{ fontSize: '0.8125rem', color: '#94A3B8', marginBottom: '14px' }}>
-          Enter a street name or landmark, and pin the approximate spot on the map.
-        </p>
+      {/* ==================================================================
+          STAGE 02: LOCATION INTELLIGENCE
+          ================================================================== */}
+      <div className="intake-stage-card">
+        <div className="stage-header">
+          <div>
+            <div className="stage-tag">
+              <span>STAGE 02</span>
+              <span>•</span>
+              <span>LOCATION INTELLIGENCE</span>
+            </div>
+            <h2 className="stage-title">Where is the incident located?</h2>
+            <p className="stage-desc">
+              Provide landmark details and position the pinpoint on the interactive satellite/street grid.
+            </p>
+          </div>
+        </div>
 
-        <div className="form-group">
-          <label className="form-label">Landmark or Street Name</label>
+        {/* Landmark / Street Name Input */}
+        <div className="form-group" style={{ marginBottom: '16px' }}>
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <MapPin size={15} color="#38BDF8" />
+            <span>Landmark or Street Name</span>
+          </label>
           <input
             type="text"
             className="form-control"
-            placeholder="e.g. Near College Gate, MG Road, or KR Hospital Junction"
+            placeholder="e.g. Near College Gate, SJCE / JSS Campus Road, or Hardinge Circle"
             value={locationName}
             onChange={e => setLocationName(e.target.value)}
             required
+            style={{ fontSize: '0.875rem' }}
           />
         </div>
 
+        {/* Spatial Position Leaflet Map */}
         <LocationPicker
           latitude={latitude}
           longitude={longitude}
@@ -264,42 +391,77 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onSuccess }) => {
         />
       </div>
 
-      {/* 3. Severity & Description */}
-      <div className="card">
-        <h3 style={{ fontSize: '1.125rem', marginBottom: '4px' }}>3. How severe is the hazard?</h3>
-        <p style={{ fontSize: '0.8125rem', color: '#94A3B8', marginBottom: '14px' }}>
-          Indicate the perceived risk to vehicles and pedestrians.
-        </p>
+      {/* ==================================================================
+          STAGE 03: RISK ASSESSMENT (SEVERITY + OPERATIONAL NARRATIVE)
+          ================================================================== */}
+      <div className="intake-stage-card">
+        <div className="stage-header">
+          <div>
+            <div className="stage-tag">
+              <span>STAGE 03</span>
+              <span>•</span>
+              <span>INCIDENT ASSESSMENT</span>
+            </div>
+            <h2 className="stage-title">Severity & Operational Description</h2>
+            <p className="stage-desc">
+              Evaluate immediate traffic risk and provide narrative context for public works dispatchers.
+            </p>
+          </div>
+        </div>
 
+        {/* Severity Selection */}
         <div className="form-group">
-          <label className="form-label">Severity Level</label>
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Sliders size={15} color="#38BDF8" />
+            <span>Severity Level (Perceived Physical Hazard)</span>
+          </label>
           <select
             className="form-control"
             value={severity}
             onChange={e => setSeverity(e.target.value as SeverityLevel)}
+            style={{ fontSize: '0.875rem' }}
           >
-            <option value="minor">Minor — Surface cracking, minor bump, low disruption</option>
-            <option value="moderate">Moderate — Noticeable pothole, vehicles slow down</option>
-            <option value="severe">Severe — Deep crater, wheel damage risk, swerving required</option>
-            <option value="catastrophic">Critical — Impassable road, cave-in, or acute crash danger</option>
+            <option value="minor">Minor (10 pts) — Surface hairline cracking, minor bump, low disruption</option>
+            <option value="moderate">Moderate (20 pts) — Noticeable depression, vehicles slow down to pass</option>
+            <option value="severe">Severe (30 pts) — Deep crater, wheel damage risk, riders forced to swerve</option>
+            <option value="catastrophic">Critical (35 pts) — Impassable road, structural collapse, acute collision danger</option>
           </select>
         </div>
 
+        {/* Operational Description Textarea */}
         <div className="form-group" style={{ marginBottom: '16px' }}>
-          <label className="form-label">Description of Hazard</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <label className="form-label" style={{ margin: 0 }}>
+              Operational Description
+            </label>
+            <div
+              style={{
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: '0.6875rem',
+                color: description.trim().length >= 10 ? '#34D399' : '#94A3B8',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              {description.trim().length >= 10 && <Check size={12} color="#34D399" />}
+              <span>{description.trim().length} / 10 chars minimum</span>
+            </div>
+          </div>
           <textarea
             className="form-control"
-            placeholder="Briefly describe the defect, size, lane position, or potential danger..."
+            placeholder="Describe defect dimensions, lane placement (left lane/center/curb), impact on two-wheelers, or emergency vehicle impedance..."
             value={description}
             onChange={e => setDescription(e.target.value)}
             rows={3}
             required
+            style={{ fontSize: '0.875rem' }}
           />
-          <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
-            At least 10 characters ({description.length} entered).
-          </div>
         </div>
 
+        {/* ==================================================================
+            STAGE 04: EVIDENCE CAPTURE (OPTIONAL PHOTO UPLOAD)
+            ================================================================== */}
         <ImageUploadWithAI
           onImageSelected={(file, preview) => {
             setImageFile(file);
@@ -312,103 +474,192 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onSuccess }) => {
         />
 
         {/* Collapsible Additional Road Context (Optional) */}
-        <div style={{ marginTop: '16px', borderTop: '1px solid #1E293B', paddingTop: '12px' }}>
+        <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px' }}>
           <button
             type="button"
+            className="context-drawer-btn"
             onClick={() => setShowAdvancedContext(!showAdvancedContext)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#38BDF8',
-              fontSize: '0.8125rem',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              padding: 0
-            }}
           >
-            <span>{showAdvancedContext ? 'Hide' : 'Add'} Optional Road Context (Road Type & Nearby Area)</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sliders size={14} color="#38BDF8" />
+              <span>{showAdvancedContext ? 'Collapse' : 'Expand'} Optional Context (Corridor Type & Vulnerability Zone)</span>
+            </div>
             {showAdvancedContext ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
           </button>
 
           {showAdvancedContext && (
-            <div className="grid-2" style={{ marginTop: '14px', backgroundColor: '#0B0F19', padding: '14px', borderRadius: '8px' }}>
+            <div className="grid-2" style={{ marginTop: '14px', backgroundColor: 'rgba(11, 15, 25, 0.9)', padding: '16px', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.15)' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.8125rem' }}>Road Type (Optional)</label>
+                <label className="form-label" style={{ fontSize: '0.78125rem' }}>Roadway Exposure Profile</label>
                 <select
                   className="form-control"
                   value={trafficExposure}
                   onChange={e => setTrafficExposure(e.target.value as TrafficExposureLevel)}
                   style={{ fontSize: '0.8125rem' }}
                 >
-                  <option value="low">Local residential street / Colony road</option>
-                  <option value="medium">Collector road (Normal local traffic)</option>
-                  <option value="high">Busy main road / Commercial avenue</option>
-                  <option value="arterial">High-speed road / Highway approach</option>
+                  <option value="low">Local residential street / Colony road (5 pts)</option>
+                  <option value="medium">Collector road (Normal local traffic) (15 pts)</option>
+                  <option value="high">Busy main road / Commercial avenue (20 pts)</option>
+                  <option value="arterial">High-speed road / Highway corridor (25 pts)</option>
                 </select>
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.8125rem' }}>Nearby Location (Optional)</label>
+                <label className="form-label" style={{ fontSize: '0.78125rem' }}>Civic Vulnerability Zone</label>
                 <select
                   className="form-control"
                   value={vulnerabilityLevel}
                   onChange={e => setVulnerabilityLevel(e.target.value as VulnerabilityZone)}
                   style={{ fontSize: '0.8125rem' }}
                 >
-                  <option value="standard">General road area</option>
-                  <option value="transit_hub">Near bus stand, auto stand, or station</option>
-                  <option value="hospital_zone">Near hospital or healthcare center</option>
-                  <option value="school_zone">Near school, college, or playground</option>
+                  <option value="standard">Standard roadway corridor (5 pts)</option>
+                  <option value="transit_hub">Transit station, bus terminus, or depot (12 pts)</option>
+                  <option value="hospital_zone">Hospital route or medical corridor (16 pts)</option>
+                  <option value="school_zone">School, college campus, or playground zone (20 pts)</option>
                 </select>
               </div>
             </div>
           )}
         </div>
 
-        {/* Priority Engine Preview */}
-        <div
-          style={{
-            marginTop: '20px',
-            backgroundColor: '#0F172A',
-            border: '1px solid #1E293B',
-            borderRadius: '8px',
-            padding: '12px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '12px'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Calculator size={18} color="#38BDF8" />
-            <div>
-              <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#F8FAFC' }}>
-                Rule-Based Priority Score
+        {/* ==================================================================
+            STAGE 05: TRIAGE PREVIEW (RULE-BASED PRIORITY SCORE)
+            ================================================================== */}
+        <div className="triage-preview-panel">
+          <div className="triage-header-row">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#38BDF8',
+                  flexShrink: 0
+                }}
+              >
+                <Calculator size={16} />
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
-                Transparent calculation based on severity, road type, and surroundings
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#F8FAFC' }}>
+                    TRIAGE PREVIEW
+                  </span>
+                  <span style={{ fontSize: '0.625rem', color: '#38BDF8', backgroundColor: 'rgba(56, 189, 248, 0.15)', padding: '1px 5px', borderRadius: '4px', fontWeight: 700 }}>
+                    RULE-BASED
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.71875rem', color: '#94A3B8' }}>
+                  Deterministic priority calculation based on Severity ({livePriority.factors[0]?.score || 0}) + Exposure ({livePriority.factors[1]?.score || 0}) + Zone ({livePriority.factors[2]?.score || 0})
+                </div>
+              </div>
+            </div>
+
+            {/* Score Pill Display */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                background: 'rgba(11, 15, 25, 0.9)',
+                border: `1px solid ${priorityColor}`,
+                padding: '6px 14px',
+                borderRadius: '8px',
+                boxShadow: `0 0 14px ${priorityColor}22`
+              }}
+            >
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.625rem', color: '#94A3B8', fontWeight: 600 }}>SCORE</div>
+                <div
+                  style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 800,
+                    color: priorityColor,
+                    fontFamily: 'JetBrains Mono, monospace',
+                    lineHeight: 1
+                  }}
+                >
+                  {livePriority.score} / 100
+                </div>
+              </div>
+              <div
+                style={{
+                  padding: '3px 8px',
+                  borderRadius: '5px',
+                  backgroundColor: `${priorityColor}20`,
+                  color: priorityColor,
+                  fontWeight: 800,
+                  fontSize: '0.71875rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em'
+                }}
+              >
+                {livePriority.level}
               </div>
             </div>
           </div>
-          <PriorityBadge level={livePriority.level} score={livePriority.score} />
         </div>
       </div>
 
-      {/* Submit Action */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-        <button
-          type="submit"
-          disabled={isSubmitting || loadingAuth}
-          className="btn btn-primary btn-lg"
-          style={{ minWidth: '200px' }}
-        >
-          <Send size={16} />
-          <span>{loadingAuth ? 'Verifying Session...' : isSubmitting ? 'Submitting...' : 'Submit Hazard Report'}</span>
-        </button>
+      {/* ==================================================================
+          STAGE 06: SUBMISSION READY & ACTION
+          ================================================================== */}
+      <div>
+        {/* Verification Checkpoints */}
+        <div className="submission-checkpoint-bar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Cpu size={15} color="#38BDF8" />
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#E2E8F0', letterSpacing: '0.04em' }}>
+              SUBMISSION READY
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <div className={`checkpoint-pill ${stepStates.step1 ? 'active' : ''}`}>
+              <CheckCircle2 size={13} color={stepStates.step1 ? '#10B981' : '#64748B'} />
+              <span>Hazard Classified</span>
+            </div>
+            <div className={`checkpoint-pill ${stepStates.step2 ? 'active' : ''}`}>
+              <CheckCircle2 size={13} color={stepStates.step2 ? '#10B981' : '#64748B'} />
+              <span>Coordinates Geotagged</span>
+            </div>
+            <div className={`checkpoint-pill ${stepStates.step3 ? 'active' : ''}`}>
+              <CheckCircle2 size={13} color={stepStates.step3 ? '#10B981' : '#64748B'} />
+              <span>Severity Assessed</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+          <button
+            type="submit"
+            disabled={isSubmitting || loadingAuth}
+            className="btn-hero-primary"
+            style={{
+              padding: '13px 28px',
+              fontSize: '0.9375rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              cursor: isSubmitting || loadingAuth ? 'not-allowed' : 'pointer',
+              opacity: isSubmitting || loadingAuth ? 0.7 : 1
+            }}
+          >
+            <Send size={16} />
+            <span>
+              {loadingAuth
+                ? 'Verifying Session...'
+                : isSubmitting
+                ? 'Registering Work Order...'
+                : 'Submit Hazard Report'}
+            </span>
+          </button>
+        </div>
       </div>
     </form>
   );

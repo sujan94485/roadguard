@@ -1,0 +1,735 @@
+/* ==========================================================================
+   ROADGUARD MUNICIPAL ROAD OPERATIONS COMMAND CENTER
+   Theme: Premium Dark Obsidian Authority Operations & Incident Triage
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. PAGE CONTAINER & COMMAND CENTER HEADER
+   -------------------------------------------------------------------------- */
+.admin-portal-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: 24px;
+  padding-bottom: 48px;
+}
+
+.admin-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.5), 0 0 14px -2px rgba(245, 158, 11, 0.15);
+  margin-bottom: 12px;
+}
+
+.admin-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #F59E0B;
+  box-shadow: 0 0 8px #F59E0B;
+  animation: admin-pulse 2s infinite ease-in-out;
+}
+
+@keyframes admin-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 8px #F59E0B;
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+    box-shadow: 0 0 2px #F59E0B;
+  }
+}
+
+.admin-badge-prefix {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #F59E0B;
+}
+
+.admin-badge-sep {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.75rem;
+}
+
+.admin-badge-sub {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+
+.admin-headline {
+  font-size: clamp(1.85rem, 3.2vw, 2.45rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #F8FAFC;
+  line-height: 1.15;
+  margin: 0 0 8px 0;
+}
+
+.admin-subtitle {
+  font-size: 0.9375rem;
+  color: #94A3B8;
+  line-height: 1.6;
+  max-width: 680px;
+  margin: 0;
+}
+
+/* Operational Identity Card */
+.operator-id-card {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 10px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.operator-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38BDF8;
+  flex-shrink: 0;
+}
+
+.operator-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.operator-tagline {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748B;
+}
+
+.operator-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  line-height: 1.25;
+}
+
+.operator-dept {
+  font-size: 0.6875rem;
+  color: #38BDF8;
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   2. OPERATIONS STATUS STRIP (TELEMETRY HUD)
+   -------------------------------------------------------------------------- */
+.admin-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .admin-telemetry-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-telemetry-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-stat-card {
+  background: rgba(13, 21, 38, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.admin-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+}
+
+.admin-stat-card:hover {
+  transform: translateY(-1px);
+  background: rgba(15, 23, 42, 0.88);
+}
+
+.admin-stat-card.stat-critical::before {
+  background: #EF4444;
+}
+
+.admin-stat-card.stat-high::before {
+  background: #F97316;
+}
+
+.admin-stat-card.stat-triage::before {
+  background: #F59E0B;
+}
+
+.admin-stat-card.stat-resolved::before {
+  background: #10B981;
+}
+
+.admin-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #64748B;
+  margin-bottom: 2px;
+}
+
+.admin-stat-value {
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.15;
+  font-family: var(--font-heading, sans-serif);
+}
+
+.admin-stat-sub {
+  font-size: 0.6875rem;
+  color: #94A3B8;
+  margin-top: 2px;
+}
+
+.admin-stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   3. SECURITY & RLS ENFORCEMENT BAR
+   -------------------------------------------------------------------------- */
+.admin-security-bar {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-left: 3px solid #38BDF8;
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.8125rem;
+}
+
+.security-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #CBD5E1;
+}
+
+.security-bar-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.security-pill {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   4. IMMEDIATE ACTION QUEUE (DISPATCH ALERT)
+   -------------------------------------------------------------------------- */
+.action-queue-banner {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 20, 25, 0.85) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-left: 4px solid #EF4444;
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.12);
+}
+
+.action-queue-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.action-queue-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #EF4444;
+  flex-shrink: 0;
+}
+
+.action-queue-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.action-queue-sub {
+  font-size: 0.8125rem;
+  color: #CBD5E1;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* --------------------------------------------------------------------------
+   5. WORKFLOW LIFECYCLE RAIL
+   -------------------------------------------------------------------------- */
+.lifecycle-rail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(13, 21, 38, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.lifecycle-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.lifecycle-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748B;
+  white-space: nowrap;
+}
+
+.lifecycle-step.active {
+  color: #38BDF8;
+}
+
+.lifecycle-arrow {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   6. COMMAND CENTER MODE SWITCH (SEGMENTED CONTROL)
+   -------------------------------------------------------------------------- */
+.command-mode-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(11, 17, 32, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 4px;
+  align-self: flex-start;
+}
+
+.command-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94A3B8;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.command-mode-btn:hover {
+  color: #F8FAFC;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.command-mode-btn.active {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #38BDF8;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.command-mode-count {
+  font-size: 0.6875rem;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: rgba(56, 189, 248, 0.15);
+  color: #38BDF8;
+}
+
+/* --------------------------------------------------------------------------
+   7. INCIDENT QUERY CONSOLE
+   -------------------------------------------------------------------------- */
+.triage-query-console {
+  background: rgba(13, 21, 38, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.triage-search-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+}
+
+.triage-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #64748B;
+  pointer-events: none;
+}
+
+.triage-search-input {
+  width: 100%;
+  height: 38px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  padding: 0 32px 0 36px;
+  color: #F8FAFC;
+  font-size: 0.8125rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.triage-search-input:focus {
+  outline: none;
+  border-color: #38BDF8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+.triage-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.triage-filter-select {
+  height: 38px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  padding: 0 10px;
+  color: #F8FAFC;
+  font-size: 0.8125rem;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.triage-filter-select:focus {
+  outline: none;
+  border-color: #38BDF8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   8. RESPONSIVE INCIDENT TRIAGE TABLE & NO-OVERFLOW ARCHITECTURE
+   -------------------------------------------------------------------------- */
+.triage-table-card {
+  background: rgba(11, 17, 32, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Desktop Table (Visible at >= 900px) */
+.triage-desktop-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.8125rem;
+  table-layout: auto;
+}
+
+@media (max-width: 899px) {
+  .triage-desktop-table {
+    display: none;
+  }
+}
+
+.triage-th {
+  background: #070A11;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 14px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+
+.triage-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.18s ease;
+}
+
+.triage-row:hover {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+.triage-td {
+  padding: 12px 14px;
+  vertical-align: middle;
+}
+
+/* Mobile & Tablet Card Grid (Visible at < 900px) */
+.triage-mobile-cards {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+@media (max-width: 899px) {
+  .triage-mobile-cards {
+    display: flex;
+  }
+}
+
+.triage-incident-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.triage-incident-card:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  background: rgba(18, 28, 50, 0.9);
+}
+
+.incident-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.incident-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.incident-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* --------------------------------------------------------------------------
+   9. REASON-OF-PRIORITY CHIPS & SCORE PILLS
+   -------------------------------------------------------------------------- */
+.priority-score-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid;
+}
+
+.priority-score-pill.critical {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #FCA5A5;
+}
+
+.priority-score-pill.high {
+  background: rgba(249, 115, 22, 0.15);
+  border-color: rgba(249, 115, 22, 0.4);
+  color: #FDBA74;
+}
+
+.priority-score-pill.medium {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #FCD34D;
+}
+
+.priority-score-pill.low {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #86EFAC;
+}
+
+.reason-chip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #CBD5E1;
+  white-space: nowrap;
+}
+
+.reason-chip-badge.critical {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #FCA5A5;
+}
+
+.reason-chip-badge.high {
+  border-color: rgba(249, 115, 22, 0.4);
+  color: #FDBA74;
+}
+
+/* --------------------------------------------------------------------------
+   10. MODAL POLISH (DETAILS & UPDATE MODAL)
+   -------------------------------------------------------------------------- */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(7, 10, 17, 0.82);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.admin-modal-box {
+  background: rgba(11, 17, 32, 0.98);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.75), 0 0 24px -4px rgba(56, 189, 248, 0.15);
+  padding: 24px;
+  box-sizing: border-box;
+  animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   11. ACCESSIBILITY & PREFERS-REDUCED-MOTION
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .admin-beacon,
+  .admin-stat-card,
+  .admin-modal-box,
+  .command-mode-btn {
+    animation: none !important;
+    transition: none !important;
+  }
+}

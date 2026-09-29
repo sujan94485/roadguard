@@ -9,10 +9,11 @@ import {
   Wrench,
   Waves,
   ShieldAlert,
-  HelpCircle
+  HelpCircle,
+  Check
 } from 'lucide-react';
 
-interface HazardTypeSelectorProps {
+export interface HazardTypeSelectorProps {
   selectedType: HazardType;
   onSelect: (type: HazardType) => void;
 }
@@ -21,60 +22,80 @@ export const HazardTypeSelector: React.FC<HazardTypeSelectorProps> = ({ selected
   const getIcon = (type: HazardType) => {
     switch (type) {
       case 'pothole':
-        return <AlertCircle size={20} />;
+        return <AlertCircle size={18} />;
       case 'broken_traffic_signal':
-        return <TrafficCone size={20} />;
+        return <TrafficCone size={18} />;
       case 'poor_street_lighting':
-        return <LightbulbOff size={20} />;
+        return <LightbulbOff size={18} />;
       case 'unsafe_pedestrian_crossing':
-        return <Footprints size={20} />;
+        return <Footprints size={18} />;
       case 'road_damage':
-        return <Wrench size={20} />;
+        return <Wrench size={18} />;
       case 'waterlogging':
-        return <Waves size={20} />;
+        return <Waves size={18} />;
       case 'obstruction':
-        return <ShieldAlert size={20} />;
+        return <ShieldAlert size={18} />;
       default:
-        return <HelpCircle size={20} />;
+        return <HelpCircle size={18} />;
     }
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
+    <div className="hazard-grid" role="radiogroup" aria-label="Hazard Type Classification">
       {HAZARD_CATEGORIES.map(category => {
         const isSelected = selectedType === category.type;
         return (
           <div
             key={category.type}
+            role="radio"
+            aria-checked={isSelected}
+            tabIndex={0}
             onClick={() => onSelect(category.type)}
-            style={{
-              padding: '14px',
-              borderRadius: '8px',
-              border: isSelected ? '2px solid #38BDF8' : '1px solid #1F2937',
-              backgroundColor: isSelected ? 'rgba(56, 189, 248, 0.1)' : '#111827',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px'
+            onKeyDown={e => {
+              if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                onSelect(category.type);
+              }
             }}
+            className={`hazard-item-card ${isSelected ? 'selected' : ''}`}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div
-                style={{
-                  color: category.color,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                {getIcon(category.type)}
+            {/* Top Row: Icon + Title + Selected Check */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  className="hazard-icon-bubble"
+                  style={{
+                    color: isSelected ? '#38BDF8' : category.color
+                  }}
+                >
+                  {getIcon(category.type)}
+                </div>
+                <span className="hazard-card-name">
+                  {category.label}
+                </span>
               </div>
-              <span style={{ fontSize: '0.875rem', fontWeight: 700, color: isSelected ? '#38BDF8' : '#F1F5F9' }}>
-                {category.label}
-              </span>
+
+              {isSelected && (
+                <div
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    backgroundColor: '#38BDF8',
+                    color: '#070A12',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}
+                >
+                  <Check size={12} strokeWidth={3} />
+                </div>
+              )}
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#94A3B8', margin: 0, lineHeight: 1.35 }}>
+
+            {/* Description */}
+            <p className="hazard-card-desc">
               {category.description}
             </p>
           </div>

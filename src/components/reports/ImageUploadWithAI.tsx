@@ -2,10 +2,9 @@ import React, { useState, useRef } from 'react';
 import { AISuggestion, HazardType } from '../../types/database.types';
 import { analyzeHazardImage } from '../../services/aiClassifier';
 import { validateHazardImage, createCompressedPreview } from '../../services/storageService';
-import { Upload, Sparkles, X, AlertCircle, CheckCircle2, ShieldQuestion } from 'lucide-react';
+import { Camera, Sparkles, X, AlertCircle, CheckCircle2, ShieldQuestion, FileImage } from 'lucide-react';
 
-
-interface ImageUploadWithAIProps {
+export interface ImageUploadWithAIProps {
   onImageSelected: (file: File | null, previewUrl: string | null) => void;
   onApplyAISuggestion?: (suggestedType: HazardType, suggestion: AISuggestion) => void;
 }
@@ -47,7 +46,6 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
     setAiSuggestion(null);
   };
 
-
   const handleClear = () => {
     setPreview(null);
     setSelectedFile(null);
@@ -65,7 +63,7 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
       setErrorMessage(null);
       const result = await analyzeHazardImage(selectedFile);
       setAiSuggestion(result.suggestion);
-    } catch (err: any) {
+    } catch {
       setErrorMessage('AI vision assistant temporarily unavailable. You may proceed manually.');
     } finally {
       setIsAnalyzing(false);
@@ -73,18 +71,32 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <Upload size={16} color="#38BDF8" />
-        <span>Photographic Hazard Evidence (Optional)</span>
-      </label>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+          <Camera size={15} color="#38BDF8" />
+          <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#E2E8F0' }}>EVIDENCE CAPTURE</span>
+        </label>
+        <span
+          style={{
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: '0.625rem',
+            color: '#94A3B8',
+            backgroundColor: 'rgba(30, 41, 59, 0.6)',
+            padding: '2px 6px',
+            borderRadius: '4px'
+          }}
+        >
+          PHOTOGRAPHIC PROOF (OPTIONAL)
+        </span>
+      </div>
 
       {errorMessage && (
         <div
           style={{
             backgroundColor: 'rgba(239, 68, 68, 0.15)',
             border: '1px solid #DC2626',
-            borderRadius: '6px',
+            borderRadius: '8px',
             padding: '8px 12px',
             fontSize: '0.8125rem',
             color: '#FCA5A5',
@@ -100,16 +112,8 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
 
       {!preview ? (
         <div
+          className="evidence-dropzone"
           onClick={() => fileInputRef.current?.click()}
-          style={{
-            border: '2px dashed #374151',
-            borderRadius: '8px',
-            padding: '28px 16px',
-            textAlign: 'center',
-            backgroundColor: '#0F172A',
-            cursor: 'pointer',
-            transition: 'border-color 0.15s ease'
-          }}
           onDragOver={e => e.preventDefault()}
           onDrop={e => {
             e.preventDefault();
@@ -131,28 +135,43 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
             style={{ display: 'none' }}
             onChange={handleFileChange}
           />
-          <Upload size={32} color="#64748B" style={{ margin: '0 auto 8px auto' }} />
+          <div
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '10px',
+              backgroundColor: 'rgba(56, 189, 248, 0.12)',
+              border: '1px solid rgba(56, 189, 248, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 10px auto',
+              color: '#38BDF8'
+            }}
+          >
+            <Camera size={22} />
+          </div>
           <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#F1F5F9', marginBottom: '4px' }}>
             Click or drag & drop road hazard photo here
           </div>
           <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
-            Supports JPEG, PNG, WebP up to 5MB
+            Supports JPEG, PNG, WebP up to 5MB • Optional evidence for municipal crews
           </div>
         </div>
       ) : (
         <div
           style={{
-            backgroundColor: '#0F172A',
-            border: '1px solid #1E293B',
-            borderRadius: '8px',
+            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+            border: '1px solid rgba(56, 189, 248, 0.28)',
+            borderRadius: '10px',
             padding: '14px',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <img
                 src={preview}
                 alt="Hazard preview"
@@ -160,16 +179,20 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
                   width: '64px',
                   height: '64px',
                   objectFit: 'cover',
-                  borderRadius: '6px',
-                  border: '1px solid #334155'
+                  borderRadius: '8px',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.5)'
                 }}
               />
               <div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#F8FAFC' }}>
-                  {selectedFile?.name}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <FileImage size={14} color="#38BDF8" />
+                  <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#F8FAFC' }}>
+                    {selectedFile?.name}
+                  </span>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
-                  {((selectedFile?.size || 0) / 1024).toFixed(1)} KB — Ready to upload
+                <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '2px' }}>
+                  {((selectedFile?.size || 0) / 1024).toFixed(1)} KB • Attached Evidence
                 </div>
               </div>
             </div>
@@ -178,15 +201,16 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={handleClear}
-              style={{ padding: '6px 10px' }}
+              style={{ padding: '5px 10px', fontSize: '0.75rem' }}
             >
-              <X size={14} /> Remove
+              <X size={13} />
+              <span>Remove Photo</span>
             </button>
           </div>
 
           {/* AI Assist Trigger */}
           {!aiSuggestion ? (
-            <div style={{ borderTop: '1px solid #1E293B', paddingTop: '10px' }}>
+            <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '10px' }}>
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
@@ -194,12 +218,12 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
                 disabled={isAnalyzing}
                 style={{
                   backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                  borderColor: '#0284C7',
+                  borderColor: 'rgba(56, 189, 248, 0.35)',
                   color: '#38BDF8',
-                  fontSize: '0.8125rem'
+                  fontSize: '0.78125rem'
                 }}
               >
-                <Sparkles size={14} />
+                <Sparkles size={13} />
                 <span>{isAnalyzing ? 'Analyzing Image...' : 'Analyze Image with Assistive AI'}</span>
               </button>
             </div>
@@ -207,7 +231,7 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
             /* Assistive Suggestion Box */
             <div
               style={{
-                backgroundColor: '#1E293B',
+                backgroundColor: 'rgba(15, 23, 42, 0.95)',
                 border: '1px solid #38BDF8',
                 borderRadius: '8px',
                 padding: '12px',
@@ -216,30 +240,31 @@ export const ImageUploadWithAI: React.FC<ImageUploadWithAIProps> = ({
                 gap: '8px'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Sparkles size={15} color="#38BDF8" />
-                  <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#38BDF8' }}>
+                  <Sparkles size={14} color="#38BDF8" />
+                  <span style={{ fontSize: '0.78125rem', fontWeight: 700, color: '#38BDF8' }}>
                     Assistive AI Classification Suggestion
                   </span>
                 </div>
                 <span
                   style={{
-                    fontSize: '0.6875rem',
+                    fontSize: '0.65625rem',
                     padding: '2px 6px',
                     borderRadius: '4px',
                     backgroundColor: 'rgba(16, 185, 129, 0.15)',
                     color: '#6EE7B7',
-                    fontWeight: 700
+                    fontWeight: 700,
+                    letterSpacing: '0.04em'
                   }}
                 >
                   {aiSuggestion.confidence.toUpperCase()} CONFIDENCE ({aiSuggestion.confidence_percentage}%)
                 </span>
               </div>
 
-              <p style={{ fontSize: '0.8125rem', color: '#CBD5E1', margin: 0 }}>
+              <p style={{ fontSize: '0.8125rem', color: '#CBD5E1', margin: 0, lineHeight: 1.4 }}>
                 {aiSuggestion.notes} Suggested Category:{' '}
-                <strong style={{ color: '#F8FAFC' }}>
+                <strong style={{ color: '#38BDF8' }}>
                   {aiSuggestion.suggested_hazard.replace(/_/g, ' ').toUpperCase()}
                 </strong>
               </p>

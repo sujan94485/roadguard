@@ -8,6 +8,7 @@ import { StatusBadge, PriorityBadge } from '../../components/common/Badge';
 import { PriorityExplainerModal } from '../../components/common/PriorityExplainerModal';
 import { StatusUpdateModal } from '../../components/admin/StatusUpdateModal';
 import { AuthModal } from '../../components/auth/AuthModal';
+import '../../styles/admin.css';
 import {
   Shield,
   BarChart3,
@@ -20,7 +21,10 @@ import {
   ShieldAlert,
   Loader2,
   LogIn,
-  AlertCircle
+  AlertCircle,
+  UserCheck,
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 
 interface AdminDashboardPageProps {
@@ -51,6 +55,8 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
   // Decision-making calculation: what needs immediate triage?
   const criticalReports = reports.filter(r => r.priority_level === 'critical' && r.status !== 'resolved');
   const highReports = reports.filter(r => r.priority_level === 'high' && r.status !== 'resolved');
+  const inTriageReports = reports.filter(r => r.status !== 'resolved');
+  const resolvedReports = reports.filter(r => r.status === 'resolved');
 
   const handleSignOut = async () => {
     await signOut();
@@ -60,19 +66,12 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
   // 1. Loading State Guard for Connected Mode
   if (isSupabaseConnected && loadingAuth) {
     return (
-      <div className="container" style={{ padding: '60px 16px' }}>
-        <div
-          className="card"
-          style={{
-            padding: '40px 24px',
-            textAlign: 'center',
-            maxWidth: '520px',
-            margin: '0 auto',
-            borderColor: '#38BDF8'
-          }}
-        >
+      <div className="container" style={{ padding: '80px 16px', maxWidth: '520px', margin: '0 auto', textAlign: 'center' }}>
+        <div className="card" style={{ padding: '40px 24px', borderColor: '#38BDF8' }}>
           <Loader2 size={36} className="animate-spin" style={{ margin: '0 auto 16px auto', color: '#38BDF8' }} />
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>Verifying Authority Credentials</h2>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', color: '#F8FAFC' }}>
+            Verifying Authority Credentials
+          </h2>
           <p style={{ color: '#94A3B8', fontSize: '0.875rem' }}>
             Checking authenticated Supabase session and loading authorization profile...
           </p>
@@ -81,20 +80,11 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
     );
   }
 
-  // 2. Unauthenticated Guard for Connected Mode (Requirement 9: "Not signed in", never fake Anonymous)
+  // 2. Unauthenticated Guard for Connected Mode
   if (isSupabaseConnected && !isAuthenticated) {
     return (
-      <div className="container" style={{ padding: '60px 16px' }}>
-        <div
-          className="card"
-          style={{
-            padding: '40px 24px',
-            textAlign: 'center',
-            maxWidth: '560px',
-            margin: '0 auto',
-            borderColor: '#334155'
-          }}
-        >
+      <div className="container" style={{ padding: '80px 16px', maxWidth: '560px', margin: '0 auto', textAlign: 'center' }}>
+        <div className="card" style={{ padding: '40px 24px', borderColor: '#334155' }}>
           <div
             style={{
               width: '64px',
@@ -110,7 +100,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
           >
             <Shield size={36} />
           </div>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Not Signed In</h2>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '8px', color: '#F8FAFC' }}>Not Signed In</h2>
           <p style={{ color: '#CBD5E1', fontSize: '0.9375rem', marginBottom: '16px' }}>
             The Authority Triage Portal is restricted to authorized municipal road maintenance personnel. You are currently not signed in.
           </p>
@@ -136,20 +126,11 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
     );
   }
 
-  // 3. Profile Loading Error Guard for Connected Mode (Requirement 9)
+  // 3. Profile Loading Error Guard for Connected Mode
   if (isSupabaseConnected && profileError) {
     return (
-      <div className="container" style={{ padding: '60px 16px' }}>
-        <div
-          className="card"
-          style={{
-            padding: '40px 24px',
-            textAlign: 'center',
-            maxWidth: '580px',
-            margin: '0 auto',
-            borderColor: '#EF4444'
-          }}
-        >
+      <div className="container" style={{ padding: '80px 16px', maxWidth: '580px', margin: '0 auto', textAlign: 'center' }}>
+        <div className="card" style={{ padding: '40px 24px', borderColor: '#EF4444' }}>
           <div
             style={{
               width: '64px',
@@ -198,20 +179,11 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
     );
   }
 
-  // 4. Non-Admin Citizen Authorization Guard for Connected Mode (Requirement 9)
+  // 4. Non-Admin Citizen Authorization Guard for Connected Mode
   if (isSupabaseConnected && user && !isAdmin) {
     return (
-      <div className="container" style={{ padding: '60px 16px' }}>
-        <div
-          className="card"
-          style={{
-            padding: '40px 24px',
-            textAlign: 'center',
-            maxWidth: '600px',
-            margin: '0 auto',
-            borderColor: '#DC2626'
-          }}
-        >
+      <div className="container" style={{ padding: '80px 16px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+        <div className="card" style={{ padding: '40px 24px', borderColor: '#DC2626' }}>
           <div
             style={{
               width: '64px',
@@ -227,7 +199,9 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
           >
             <ShieldAlert size={36} />
           </div>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Administrative Authorization Required</h2>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '8px', color: '#F8FAFC' }}>
+            Administrative Authorization Required
+          </h2>
           <p style={{ color: '#CBD5E1', fontSize: '0.9375rem', marginBottom: '16px' }}>
             This municipal dispatch portal is restricted to authorized personnel. Your signed-in account (
             <strong style={{ color: '#F8FAFC' }}>{user.email}</strong>) has the database-backed role:{' '}
@@ -262,56 +236,45 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
   }
 
   return (
-    <div className="container" style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          flexWrap: 'wrap',
-          gap: '16px'
-        }}
-      >
+    <div className="container admin-portal-wrapper">
+      {/* 1. Command Center Header & Identity Card */}
+      <div className="admin-header-section">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <Shield size={20} color="#F59E0B" />
-            <span style={{ fontSize: '0.8125rem', color: '#F59E0B', fontWeight: 700, textTransform: 'uppercase' }}>
-              {isSupabaseConnected ? 'Authority Triage Portal (Connected)' : 'Authority Triage Portal (Demonstration)'}
-            </span>
+          <div className="admin-badge">
+            <span className="admin-beacon" />
+            <span className="admin-badge-prefix">AUTHORITY OPERATIONS</span>
+            <span className="admin-badge-sep">/</span>
+            <span className="admin-badge-sub">MUNICIPAL ROAD SAFETY</span>
           </div>
-          <h1 style={{ fontSize: '1.875rem', marginBottom: '6px' }}>Road Hazard Triage & Dispatch</h1>
-          <p style={{ color: '#94A3B8', fontSize: '0.9375rem' }}>
+
+          <h1 className="admin-headline">Road Hazard Triage & Dispatch</h1>
+          <p className="admin-subtitle">
             Review citizen intake, inspect rule-based priority engine justifications, and log status transitions.
           </p>
         </div>
 
-        {/* Current Profile Badge */}
-        <div
-          style={{
-            backgroundColor: '#111827',
-            border: '1px solid #1F2937',
-            borderRadius: '8px',
-            padding: '10px 14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '0.6875rem', color: '#94A3B8' }}>Active Profile:</div>
-            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#F8FAFC' }}>
+        {/* Operational Identity Card */}
+        <div className="operator-id-card">
+          <div className="operator-avatar">
+            <UserCheck size={20} />
+          </div>
+          <div className="operator-details">
+            <div className="operator-tagline">
+              {isSupabaseConnected ? 'AUTHENTICATED OPERATOR' : 'DEMO OPERATIONS CONSOLE'}
+            </div>
+            <div className="operator-name">
               {user?.full_name || (isDemoAuth ? 'Demo Authority User' : 'Authenticated Staff')}
             </div>
-            <div style={{ fontSize: '0.6875rem', color: '#38BDF8' }}>
+            <div className="operator-dept">
               {user?.department || 'Municipal Road Maintenance Team'}
             </div>
           </div>
           {isDemoAuth && role !== 'admin' && (
             <button
+              type="button"
               className="btn btn-secondary btn-sm"
               onClick={() => loginAsDemo('admin')}
-              style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+              style={{ fontSize: '0.75rem', padding: '6px 10px', marginLeft: '6px' }}
             >
               Demo Admin Switch
             </button>
@@ -319,119 +282,166 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
         </div>
       </div>
 
-      {/* Honest Architecture & Security Note */}
-      <div
-        style={{
-          backgroundColor: 'rgba(30, 41, 59, 0.6)',
-          border: '1px solid #334155',
-          borderRadius: '8px',
-          padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '10px',
-          fontSize: '0.8125rem'
-        }}
-      >
-        <ShieldAlert size={18} color="#F59E0B" style={{ flexShrink: 0, marginTop: '2px' }} />
-        <div>
-          <strong style={{ color: '#FBBF24' }}>
-            {isSupabaseConnected ? 'Live Database Authorization:' : 'Prototype Demonstration Authorization:'}
-          </strong>
-          <span style={{ color: '#94A3B8', marginLeft: '6px' }}>
+      {/* 2. Operations Status Strip (Telemetry HUD Cards) */}
+      <div className="admin-telemetry-grid">
+        <div className="admin-stat-card stat-critical">
+          <div>
+            <div className="admin-stat-label" style={{ color: '#FCA5A5' }}>CRITICAL BACKLOG</div>
+            <div className="admin-stat-value" style={{ color: '#EF4444' }}>
+              {criticalReports.length}
+            </div>
+            <div className="admin-stat-sub">Immediate dispatch needed</div>
+          </div>
+          <div className="admin-stat-icon" style={{ color: '#EF4444' }}>
+            <Flame size={20} />
+          </div>
+        </div>
+
+        <div className="admin-stat-card stat-high">
+          <div>
+            <div className="admin-stat-label" style={{ color: '#FDBA74' }}>HIGH PRIORITY</div>
+            <div className="admin-stat-value" style={{ color: '#F97316' }}>
+              {highReports.length}
+            </div>
+            <div className="admin-stat-sub">Supervisor review queued</div>
+          </div>
+          <div className="admin-stat-icon" style={{ color: '#F97316' }}>
+            <AlertCircle size={20} />
+          </div>
+        </div>
+
+        <div className="admin-stat-card stat-triage">
+          <div>
+            <div className="admin-stat-label" style={{ color: '#FCD34D' }}>IN TRIAGE / ACTIVE</div>
+            <div className="admin-stat-value" style={{ color: '#F59E0B' }}>
+              {inTriageReports.length}
+            </div>
+            <div className="admin-stat-sub">Active workflow records</div>
+          </div>
+          <div className="admin-stat-icon" style={{ color: '#F59E0B' }}>
+            <ShieldAlert size={20} />
+          </div>
+        </div>
+
+        <div className="admin-stat-card stat-resolved">
+          <div>
+            <div className="admin-stat-label" style={{ color: '#86EFAC' }}>RESOLVED HAZARDS</div>
+            <div className="admin-stat-value" style={{ color: '#10B981' }}>
+              {resolvedReports.length}
+            </div>
+            <div className="admin-stat-sub">Repairs verified complete</div>
+          </div>
+          <div className="admin-stat-icon" style={{ color: '#10B981' }}>
+            <Shield size={20} />
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Operational Security & RLS Enforcement Bar */}
+      <div className="admin-security-bar">
+        <div className="security-bar-left">
+          <ShieldAlert size={16} color="#38BDF8" style={{ flexShrink: 0 }} />
+          <span>
+            <strong style={{ color: '#F8FAFC' }}>
+              {isSupabaseConnected ? 'Live Database Authorization:' : 'Demonstration Mode Authorization:'}
+            </strong>{' '}
             {isSupabaseConnected
               ? 'Active user profile and RLS policies are enforced by PostgreSQL. All status mutations are recorded in the audit trail.'
-              : 'In this standalone demonstration mode, role switching is handled client-side for presentation convenience. In production with Supabase connected, all status mutations are enforced at the database layer via PostgreSQL RLS policies.'}
+              : 'Standalone demonstration mode with client-side role emulation. In production with Supabase connected, all status mutations are enforced at the database layer via PostgreSQL RLS policies.'}
           </span>
         </div>
+
+        <div className="security-bar-badges">
+          <span className="security-pill">RLS ENFORCED</span>
+          <span className="security-pill">AUDIT TRAIL ACTIVE</span>
+        </div>
       </div>
 
+      {/* 4. Workflow Lifecycle Visual Rail */}
+      <div className="lifecycle-rail">
+        <div className="lifecycle-step active">
+          <span>01 INGEST</span>
+        </div>
+        <span className="lifecycle-arrow"><ChevronRight size={14} /></span>
+        <div className="lifecycle-step active">
+          <span>02 TRIAGE</span>
+        </div>
+        <span className="lifecycle-arrow"><ChevronRight size={14} /></span>
+        <div className="lifecycle-step active">
+          <span>03 PRIORITIZE</span>
+        </div>
+        <span className="lifecycle-arrow"><ChevronRight size={14} /></span>
+        <div className="lifecycle-step active">
+          <span>04 DISPATCH</span>
+        </div>
+        <span className="lifecycle-arrow"><ChevronRight size={14} /></span>
+        <div className="lifecycle-step active">
+          <span>05 RESOLVE</span>
+        </div>
+        <span className="lifecycle-arrow"><ChevronRight size={14} /></span>
+        <div className="lifecycle-step active">
+          <span>06 AUDIT</span>
+        </div>
+      </div>
 
-      {/* Decision-Making Priority Highlight: "What should the authority address first?" */}
-      <div
-        style={{
-          backgroundColor: '#111827',
-          border: '1px solid #374151',
-          borderLeft: '4px solid #EF4444',
-          borderRadius: '8px',
-          padding: '16px 20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '12px'
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <Flame size={18} color="#EF4444" />
-            <strong style={{ fontSize: '1rem', color: '#F8FAFC' }}>Immediate Action Queue:</strong>
+      {/* 5. Immediate Action Queue (Dispatch Alert Banner) */}
+      <div className="action-queue-banner">
+        <div className="action-queue-content">
+          <div className="action-queue-icon">
+            <Flame size={22} />
           </div>
-          <p style={{ color: '#CBD5E1', fontSize: '0.875rem', margin: 0 }}>
-            <strong style={{ color: '#EF4444' }}>{criticalReports.length} Critical</strong> and{' '}
-            <strong style={{ color: '#F97316' }}>{highReports.length} High-Priority</strong> unresolved hazards require supervisor review and crew dispatch.
-          </p>
+          <div>
+            <div className="action-queue-title">
+              <span>IMMEDIATE ACTION QUEUE</span>
+              <span className="sample-tag" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#FCA5A5', borderColor: 'rgba(239, 68, 68, 0.4)' }}>
+                DISPATCH ALERT
+              </span>
+            </div>
+            <p className="action-queue-sub">
+              <strong style={{ color: '#EF4444' }}>{criticalReports.length} Critical</strong> and{' '}
+              <strong style={{ color: '#F97316' }}>{highReports.length} High-Priority</strong> unresolved hazards require supervisor review and crew dispatch.
+            </p>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {criticalReports.length > 0 && (
-            <button
-              className="btn btn-danger btn-sm"
-              style={{ fontSize: '0.75rem', padding: '6px 12px' }}
-              onClick={() => {
-                setActiveTab('queue');
-                if (criticalReports[0]) setSelectedReport(criticalReports[0]);
-              }}
-            >
-              <span>Inspect Top Critical ({criticalReports[0]?.report_code})</span>
-            </button>
-          )}
-        </div>
+        {criticalReports.length > 0 && (
+          <button
+            type="button"
+            className="btn btn-danger btn-sm"
+            style={{ fontSize: '0.75rem', padding: '8px 14px', whiteSpace: 'nowrap' }}
+            onClick={() => {
+              setActiveTab('queue');
+              if (criticalReports[0]) setSelectedReport(criticalReports[0]);
+            }}
+          >
+            <span>Inspect Top Critical ({criticalReports[0]?.report_code})</span>
+          </button>
+        )}
       </div>
 
-      {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #1F2937', paddingBottom: '12px' }}>
+      {/* 6. Mode Switch (Command Center Segmented Control) */}
+      <div className="command-mode-nav">
         <button
+          type="button"
+          className={`command-mode-btn ${activeTab === 'queue' ? 'active' : ''}`}
           onClick={() => setActiveTab('queue')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: activeTab === 'queue' ? '#1E293B' : 'transparent',
-            color: activeTab === 'queue' ? '#38BDF8' : '#94A3B8',
-            fontWeight: activeTab === 'queue' ? 700 : 500,
-            cursor: 'pointer',
-            fontSize: '0.875rem'
-          }}
         >
-          <ListFilter size={16} />
-          <span>Priority Triage Queue ({reports.length})</span>
+          <ListFilter size={15} />
+          <span>Priority Triage Queue</span>
+          <span className="command-mode-count">{reports.length}</span>
         </button>
 
         <button
+          type="button"
+          className={`command-mode-btn ${activeTab === 'analytics' ? 'active' : ''}`}
           onClick={() => setActiveTab('analytics')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: activeTab === 'analytics' ? '#1E293B' : 'transparent',
-            color: activeTab === 'analytics' ? '#38BDF8' : '#94A3B8',
-            fontWeight: activeTab === 'analytics' ? 700 : 500,
-            cursor: 'pointer',
-            fontSize: '0.875rem'
-          }}
         >
-          <BarChart3 size={16} />
+          <BarChart3 size={15} />
           <span>Operational Analytics</span>
         </button>
       </div>
 
-      {/* Tab Content */}
+      {/* 7. Tab Content */}
       {activeTab === 'queue' ? (
         <ReportManagementTable
           reports={reports}
@@ -442,76 +452,68 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
         <AnalyticsOverview reports={reports} />
       )}
 
-      {/* Report Inspection Modal (Details) */}
+      {/* 8. Incident Inspection Details Modal */}
       {selectedReport && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px'
-          }}
-          onClick={() => setSelectedReport(null)}
-        >
-          <div
-            style={{
-              backgroundColor: '#111827',
-              border: '1px solid #374151',
-              borderRadius: '12px',
-              width: '100%',
-              maxWidth: '680px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
-              padding: '24px'
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+        <div className="admin-modal-overlay" onClick={() => setSelectedReport(null)}>
+          <div className="admin-modal-box" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
               <div>
-                <div style={{ fontSize: '0.75rem', color: '#94A3B8', textTransform: 'uppercase' }}>Hazard Review</div>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#38BDF8' }}>
+                <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px' }}>
+                  INCIDENT INSPECTION CONSOLE
+                </div>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#38BDF8', margin: 0 }}>
                   {selectedReport.report_code}
                 </h3>
               </div>
               <button
+                type="button"
                 onClick={() => setSelectedReport(null)}
-                style={{ background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer' }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: '#94A3B8',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease'
+                }}
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
+            {/* Badges */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
               <PriorityBadge level={selectedReport.priority_level} score={selectedReport.priority_score} />
               <StatusBadge status={selectedReport.status} />
-              {selectedReport.id.startsWith('demo-') ? (
+              {selectedReport.id.startsWith('demo-') || selectedReport.id.startsWith('rep-00') ? (
                 <span className="sample-tag">Sample Demonstration Data</span>
               ) : (
                 <span className="user-tag">User Submitted</span>
               )}
             </div>
 
+            {/* Evidence Image */}
             {selectedReport.image_url && (
-              <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #1F2937', marginBottom: '16px' }}>
+              <div style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(56, 189, 248, 0.25)', marginBottom: '16px', background: '#0F172A' }}>
                 <img
                   src={selectedReport.image_url}
                   alt={selectedReport.hazard_type}
-                  style={{ width: '100%', height: '240px', objectFit: 'cover', display: 'block' }}
+                  style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
                 />
               </div>
             )}
 
+            {/* Spatial Location & Narrative */}
             <div
               style={{
-                backgroundColor: '#0F172A',
-                border: '1px solid #1E293B',
-                borderRadius: '8px',
+                backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '10px',
                 padding: '16px',
                 marginBottom: '16px'
               }}
@@ -521,21 +523,30 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8125rem', color: '#94A3B8', marginBottom: '12px' }}>
                 <MapPin size={15} color="#38BDF8" />
-                <span>{selectedReport.location_name} ({selectedReport.latitude.toFixed(4)}, {selectedReport.longitude.toFixed(4)})</span>
+                <span>{selectedReport.location_name} (LAT {selectedReport.latitude.toFixed(4)}, LNG {selectedReport.longitude.toFixed(4)})</span>
               </div>
               <p style={{ fontSize: '0.875rem', color: '#CBD5E1', lineHeight: 1.5, margin: 0 }}>
                 {selectedReport.description}
               </p>
             </div>
 
-            {/* Top Score Drivers */}
-            <div style={{ backgroundColor: '#1E293B', borderRadius: '8px', padding: '14px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#F8FAFC', marginBottom: '6px' }}>
-                Priority Evaluation Breakdown ({selectedReport.priority_score}/100)
+            {/* Deterministic Score Driver Breakdown */}
+            <div
+              style={{
+                backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid rgba(56, 189, 248, 0.2)',
+                borderRadius: '10px',
+                padding: '16px',
+                marginBottom: '18px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8125rem', fontWeight: 700, color: '#38BDF8', marginBottom: '8px' }}>
+                <Sparkles size={14} />
+                <span>Priority Evaluation Breakdown ({selectedReport.priority_score}/100)</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {selectedReport.priority_breakdown?.factors?.map((f, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', padding: '4px 0', borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
                     <span style={{ color: '#CBD5E1' }}>{f.factor}: {f.detail}</span>
                     <strong style={{ color: f.score > 0 ? '#38BDF8' : '#64748B' }}>+{f.score} pts</strong>
                   </div>
@@ -543,20 +554,23 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
               </div>
             </div>
 
+            {/* Modal Actions */}
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
               <button
+                type="button"
                 className="btn btn-secondary btn-sm"
                 onClick={() => setIsExplaining(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px' }}
               >
                 <Calculator size={14} color="#38BDF8" />
                 <span>Explain Full Formula</span>
               </button>
 
               <button
+                type="button"
                 className="btn btn-primary btn-sm"
                 onClick={() => setIsUpdating(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 18px' }}
               >
                 <Edit3 size={14} />
                 <span>Update Status / Action Note</span>

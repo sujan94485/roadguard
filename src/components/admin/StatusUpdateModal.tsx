@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ReportRecord, ReportStatus } from '../../types/database.types';
 import { useReports } from '../../hooks/useReports';
 import { useAuth } from '../../hooks/useAuth';
-import { X, Shield, Send } from 'lucide-react';
+import { X, Shield, Send, AlertCircle, Loader2 } from 'lucide-react';
 
 interface StatusUpdateModalProps {
   report: ReportRecord;
@@ -51,53 +51,38 @@ export const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(4px)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px'
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          backgroundColor: '#111827',
-          border: '1px solid #374151',
-          borderRadius: '12px',
-          width: '100%',
-          maxWidth: '540px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
-          padding: '24px'
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal-box" style={{ maxWidth: '540px' }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Shield size={18} color="#F59E0B" />
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Update Hazard Status</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <Shield size={18} color="#38BDF8" />
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#F8FAFC', margin: 0 }}>
+                Status Transition Console
+              </h3>
             </div>
-            <p style={{ fontSize: '0.8125rem', color: '#94A3B8' }}>
-              Administrative status transition for <strong>{report.report_code}</strong>
+            <p style={{ fontSize: '0.8125rem', color: '#94A3B8', margin: 0 }}>
+              Recording operational triage update for Incident <strong style={{ color: '#38BDF8' }}>{report.report_code}</strong>
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             style={{
-              background: 'transparent',
-              border: 'none',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               color: '#94A3B8',
               cursor: 'pointer',
-              padding: '4px'
+              padding: '6px',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease'
             }}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
@@ -105,36 +90,51 @@ export const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
           <div
             style={{
               backgroundColor: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid #DC2626',
-              borderRadius: '6px',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              borderRadius: '8px',
               padding: '10px 14px',
               color: '#FCA5A5',
               fontSize: '0.8125rem',
-              marginBottom: '16px'
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}
           >
-            {errorMessage}
+            <AlertCircle size={16} color="#EF4444" style={{ flexShrink: 0 }} />
+            <span>{errorMessage}</span>
           </div>
         )}
 
         <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">New Status</label>
+            <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em', color: '#CBD5E1' }}>
+              TARGET OPERATIONAL STATUS
+            </label>
             <select
               className="form-control"
               value={newStatus}
               onChange={e => setNewStatus(e.target.value as ReportStatus)}
+              style={{
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                borderColor: 'rgba(255, 255, 255, 0.12)',
+                color: '#F8FAFC',
+                height: '40px',
+                fontSize: '0.875rem'
+              }}
             >
-              <option value="submitted">Submitted (Intake)</option>
+              <option value="submitted">Submitted (Intake Received)</option>
               <option value="under_review">Under Review (Inspection Assigned)</option>
               <option value="in_progress">In Progress (Maintenance Crew Dispatched)</option>
-              <option value="resolved">Resolved (Hazard Fixed & Verified)</option>
+              <option value="resolved">Resolved (Repairs Fixed & Verified)</option>
               <option value="rejected">Closed / Duplicate</option>
             </select>
           </div>
 
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Administrative Action / Dispatch Note</label>
+            <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em', color: '#CBD5E1' }}>
+              ADMINISTRATIVE DISPATCH & AUDIT NOTE
+            </label>
             <textarea
               className="form-control"
               rows={3}
@@ -142,24 +142,55 @@ export const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
               value={comment}
               onChange={e => setComment(e.target.value)}
               required
+              style={{
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                borderColor: 'rgba(255, 255, 255, 0.12)',
+                color: '#F8FAFC',
+                fontSize: '0.875rem',
+                lineHeight: 1.5
+              }}
             />
-            <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '4px' }}>
-              Logged by: <strong>{user?.full_name}</strong> ({user?.department || 'Municipal Road Maintenance Team'})
+            <div
+              style={{
+                fontSize: '0.75rem',
+                color: '#94A3B8',
+                marginTop: '8px',
+                padding: '8px 12px',
+                backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                borderRadius: '6px',
+                border: '1px solid rgba(255, 255, 255, 0.05)'
+              }}
+            >
+              Audit Attribution: <strong style={{ color: '#F8FAFC' }}>{user?.full_name || 'Authenticated Operator'}</strong> ({user?.department || 'Municipal Road Maintenance Team'})
             </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={onClose}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={onClose}
+              style={{ padding: '8px 16px' }}
+            >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="btn btn-primary btn-sm"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 18px' }}
             >
-              <Send size={14} />
-              <span>{isSubmitting ? 'Recording Action...' : 'Record Status Update'}</span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>Recording Action...</span>
+                </>
+              ) : (
+                <>
+                  <Send size={14} />
+                  <span>Record Status Update</span>
+                </>
+              )}
             </button>
           </div>
         </form>

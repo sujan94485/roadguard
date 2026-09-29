@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useReports } from '../hooks/useReports';
 import { ReportRecord, HazardType, PriorityLevel, ReportStatus } from '../types/database.types';
 import { HAZARD_CATEGORIES } from '../types/report.types';
 import { SafetyMap } from '../components/map/SafetyMap';
 import { PriorityBadge, StatusBadge } from '../components/common/Badge';
 import { PriorityExplainerModal } from '../components/common/PriorityExplainerModal';
+import '../styles/map.css';
 import {
   Search,
   MapPin,
   X,
   Calculator,
   ArrowRight,
-  Info
+  ShieldAlert,
+  AlertTriangle,
+  CheckCircle2,
+  Activity,
+  RotateCcw,
+  SlidersHorizontal,
+  Compass
 } from 'lucide-react';
 
 interface SafetyMapPageProps {
@@ -32,217 +39,442 @@ export const SafetyMapPage: React.FC<SafetyMapPageProps> = ({ onNavigate }) => {
   const [isExplaining, setIsExplaining] = useState(false);
 
   // Filtered reports
-  const filteredReports = reports.filter(r => {
-    const matchesSearch =
-      r.report_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.location_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.description.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredReports = useMemo(() => {
+    return reports.filter(r => {
+      const matchesSearch =
+        searchQuery.trim() === '' ||
+        r.report_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.location_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesHazard = selectedHazard === 'all' || r.hazard_type === selectedHazard;
-    const matchesPriority = selectedPriority === 'all' || r.priority_level === selectedPriority;
-    const matchesStatus = selectedStatus === 'all' || r.status === selectedStatus;
+      const matchesHazard = selectedHazard === 'all' || r.hazard_type === selectedHazard;
+      const matchesPriority = selectedPriority === 'all' || r.priority_level === selectedPriority;
+      const matchesStatus = selectedStatus === 'all' || r.status === selectedStatus;
 
-    return matchesSearch && matchesHazard && matchesPriority && matchesStatus;
-  });
+      return matchesSearch && matchesHazard && matchesPriority && matchesStatus;
+    });
+  }, [reports, searchQuery, selectedHazard, selectedPriority, selectedStatus]);
+
+  // Derived telemetry metrics strictly from actual report data
+  const telemetry = useMemo(() => {
+    const highRisk = filteredReports.filter(
+      r => r.priority_level === 'critical' || r.priority_level === 'high'
+    ).length;
+    const inTriage = filteredReports.filter(
+      r => r.status === 'submitted' || r.status === 'under_review' || r.status === 'in_progress'
+    ).length;
+    const resolved = filteredReports.filter(r => r.status === 'resolved').length;
+
+    return {
+      visible: filteredReports.length,
+      total: reports.length,
+      highRisk,
+      inTriage,
+      resolved
+    };
+  }, [filteredReports, reports.length]);
+
+  const hasActiveFilters =
+    searchQuery.trim() !== '' ||
+    selectedHazard !== 'all' ||
+    selectedPriority !== 'all' ||
+    selectedStatus !== 'all';
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedHazard('all');
+    setSelectedPriority('all');
+    setSelectedStatus('all');
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)', overflow: 'hidden' }}>
-      {/* Top Filter Bar */}
-      <div
-        style={{
-          backgroundColor: '#111827',
-          borderBottom: '1px solid #1F2937',
-          padding: '10px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '10px',
-          zIndex: 500
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '240px' }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
-            <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: '10px', top: '10px' }} />
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search by code, landmark, description..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: '30px', fontSize: '0.8125rem', height: '32px' }}
-            />
+    <div className="container spatial-page-wrapper">
+      {/* 1. Spatial Operations Page Header */}
+      <div className="spatial-header-section">
+        <div className="spatial-header-badge">
+          <span className="spatial-beacon" />
+          <span className="spatial-badge-prefix">SPATIAL INTELLIGENCE</span>
+          <span className="spatial-badge-sep">/</span>
+          <span className="spatial-badge-sub">ROAD HAZARD OPERATIONS</span>
+        </div>
+
+        <div className="spatial-title-row">
+          <div>
+            <h1 className="spatial-headline">Safety Map</h1>
           </div>
 
-          <div style={{ fontSize: '0.75rem', color: '#94A3B8', whiteSpace: 'nowrap' }}>
-            Showing <strong>{filteredReports.length}</strong> reported hazard{filteredReports.length === 1 ? '' : 's'}
+          <div className="spatial-status-strip">
+            <div className="spatial-status-item success">
+              <span className="spatial-status-dot" />
+              <span>SPATIAL ENGINE ONLINE</span>
+            </div>
+            <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+            <div className="spatial-status-item active">
+              <span>RULE-BASED TRIAGE ACTIVE</span>
+            </div>
+            <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+            <div className="spatial-status-item">
+              <span>{reports.length} HAZARD COORDINATES</span>
+            </div>
           </div>
         </div>
 
-        {/* Filter Dropdowns */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <select
-            className="form-control"
-            value={selectedHazard}
-            onChange={e => setSelectedHazard(e.target.value as any)}
-            style={{ width: 'auto', height: '32px', fontSize: '0.8125rem', padding: '2px 8px' }}
-          >
-            <option value="all">All Hazard Categories</option>
-            {HAZARD_CATEGORIES.map(c => (
-              <option key={c.type} value={c.type}>
-                {c.label}
-              </option>
-            ))}
-          </select>
+        <p className="spatial-subtitle">
+          Real-time spatial visualization of citizen-reported roadway hazards and deterministic rule-based priority scores across municipal transit corridors.
+        </p>
+      </div>
 
-          <select
-            className="form-control"
-            value={selectedPriority}
-            onChange={e => setSelectedPriority(e.target.value as any)}
-            style={{ width: 'auto', height: '32px', fontSize: '0.8125rem', padding: '2px 8px' }}
-          >
-            <option value="all">All Priorities</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
+      {/* 2. Intelligence Telemetry Strip (HUD Counters) */}
+      <div className="spatial-telemetry-grid">
+        <div className="telemetry-card card-cyan">
+          <div className="telemetry-card-content">
+            <span className="telemetry-card-label">ACTIVE INCIDENTS</span>
+            <span className="telemetry-card-value">{telemetry.visible}</span>
+            <span className="telemetry-card-sub">
+              {telemetry.visible === 1 ? '1 hazard displayed' : `${telemetry.visible} hazards displayed`}
+            </span>
+          </div>
+          <div className="telemetry-card-icon" style={{ color: '#38BDF8' }}>
+            <Activity size={18} />
+          </div>
+        </div>
 
-          <select
-            className="form-control"
-            value={selectedStatus}
-            onChange={e => setSelectedStatus(e.target.value as any)}
-            style={{ width: 'auto', height: '32px', fontSize: '0.8125rem', padding: '2px 8px' }}
-          >
-            <option value="all">All Statuses</option>
-            <option value="submitted">Submitted</option>
-            <option value="under_review">Under Review</option>
-            <option value="in_progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-          </select>
+        <div className="telemetry-card card-red">
+          <div className="telemetry-card-content">
+            <span className="telemetry-card-label">HIGH PRIORITY INCIDENTS</span>
+            <span className="telemetry-card-value" style={{ color: '#FCA5A5' }}>
+              {telemetry.highRisk}
+            </span>
+            <span className="telemetry-card-sub">Critical / High priority</span>
+          </div>
+          <div className="telemetry-card-icon" style={{ color: '#EF4444' }}>
+            <AlertTriangle size={18} />
+          </div>
+        </div>
+
+        <div className="telemetry-card card-amber">
+          <div className="telemetry-card-content">
+            <span className="telemetry-card-label">IN MUNICIPAL TRIAGE</span>
+            <span className="telemetry-card-value" style={{ color: '#FCD34D' }}>
+              {telemetry.inTriage}
+            </span>
+            <span className="telemetry-card-sub">Submitted / Under review / Active</span>
+          </div>
+          <div className="telemetry-card-icon" style={{ color: '#F59E0B' }}>
+            <ShieldAlert size={18} />
+          </div>
+        </div>
+
+        <div className="telemetry-card card-green">
+          <div className="telemetry-card-content">
+            <span className="telemetry-card-label">RESOLVED HAZARDS</span>
+            <span className="telemetry-card-value" style={{ color: '#86EFAC' }}>
+              {telemetry.resolved}
+            </span>
+            <span className="telemetry-card-sub">Repairs verified complete</span>
+          </div>
+          <div className="telemetry-card-icon" style={{ color: '#10B981' }}>
+            <CheckCircle2 size={18} />
+          </div>
         </div>
       </div>
 
-      {/* Map & Detail Drawer Area */}
-      <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}>
-        {/* Main Map */}
-        <div style={{ flex: 1, height: '100%', position: 'relative' }}>
+      {/* 3. Integrated Spatial Query Console */}
+      <div className="spatial-query-console">
+        <div className="console-header-bar">
+          <div className="console-header-left">
+            <SlidersHorizontal size={14} />
+            <span>SPATIAL QUERY CONSOLE</span>
+          </div>
+          <div className="console-header-right">
+            <span>
+              Showing <strong>{filteredReports.length}</strong> of <strong>{reports.length}</strong> incidents
+            </span>
+          </div>
+        </div>
+
+        <div className="console-controls-grid">
+          {/* Search Input */}
+          <div className="console-field-group console-field-search">
+            <label className="console-field-label">SEARCH INCIDENTS</label>
+            <div className="console-input-wrap">
+              <Search size={14} className="console-input-icon" />
+              <input
+                type="text"
+                className="console-input"
+                placeholder="Search by code, landmark, description..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="console-clear-btn"
+                  onClick={() => setSearchQuery('')}
+                  title="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Hazard Category Filter */}
+          <div className="console-field-group">
+            <label className="console-field-label">CATEGORY</label>
+            <select
+              className="console-select"
+              value={selectedHazard}
+              onChange={e => setSelectedHazard(e.target.value as any)}
+            >
+              <option value="all">All Hazard Categories</option>
+              {HAZARD_CATEGORIES.map(c => (
+                <option key={c.type} value={c.type}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Priority Level Filter */}
+          <div className="console-field-group">
+            <label className="console-field-label">PRIORITY</label>
+            <select
+              className="console-select"
+              value={selectedPriority}
+              onChange={e => setSelectedPriority(e.target.value as any)}
+            >
+              <option value="all">All Priorities</option>
+              <option value="critical">Critical (85–100)</option>
+              <option value="high">High (65–84)</option>
+              <option value="medium">Medium (40–64)</option>
+              <option value="low">Low (0–39)</option>
+            </select>
+          </div>
+
+          {/* Report Status Filter */}
+          <div className="console-field-group">
+            <label className="console-field-label">STATUS</label>
+            <select
+              className="console-select"
+              value={selectedStatus}
+              onChange={e => setSelectedStatus(e.target.value as any)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="submitted">Submitted</option>
+              <option value="under_review">Under Review</option>
+              <option value="in_progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
+
+          {/* Reset Action */}
+          <div className="console-field-group console-field-action">
+            {hasActiveFilters ? (
+              <button
+                type="button"
+                className="console-reset-btn"
+                onClick={handleResetFilters}
+                title="Reset all filters"
+              >
+                <RotateCcw size={13} />
+                <span>Reset Filters</span>
+              </button>
+            ) : (
+              <div style={{ height: '38px' }} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Large Spatial Incident Map Operations Container */}
+      <div className="spatial-map-console">
+        {/* Map Command Bar Shell */}
+        <div className="spatial-map-topbar">
+          <div className="map-topbar-left">
+            <Compass size={16} color="#38BDF8" />
+            <span className="map-shell-title">SPATIAL INCIDENT TELEMETRY</span>
+            <span className="map-shell-tag">ROADGUARD OPERATIONS GRID</span>
+          </div>
+
+          <div className="map-topbar-right">
+            <div className="map-telemetry-badge">
+              <span className="map-telemetry-beacon" />
+              <span>OSM GRID • MYSURU DEMONSTRATION</span>
+            </div>
+            <span style={{ color: 'rgba(255, 255, 255, 0.15)' }}>|</span>
+            <span style={{ color: '#38BDF8', fontWeight: 600 }}>DEMO TELEMETRY</span>
+          </div>
+        </div>
+
+        {/* Map Inner Stage */}
+        <div style={{ position: 'relative', width: '100%' }}>
           <SafetyMap
             reports={filteredReports}
             selectedReportId={selectedReport?.id}
             onSelectReport={report => setSelectedReport(report)}
-            height="100%"
+            height="620px"
           />
-        </div>
 
-        {/* Slide-over Inspection Detail Drawer */}
-        {selectedReport && (
-          <div
-            style={{
-              width: '380px',
-              maxWidth: '100%',
-              backgroundColor: '#111827',
-              borderLeft: '1px solid #1F2937',
-              height: '100%',
-              overflowY: 'auto',
-              padding: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              zIndex: 600,
-              boxShadow: '-4px 0 16px rgba(0, 0, 0, 0.4)'
-            }}
-          >
-            {/* Drawer Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <h3 style={{ fontSize: '1.25rem', color: '#38BDF8', fontWeight: 800 }}>
-                    {selectedReport.report_code}
-                  </h3>
-                  {selectedReport.id.startsWith('demo-') ? (
-                    <span className="sample-tag">Sample Demo</span>
-                  ) : (
-                    <span className="user-tag">User Added</span>
-                  )}
-                </div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#F1F5F9' }}>
-                  {selectedReport.hazard_type.replace(/_/g, ' ').toUpperCase()}
-                </div>
+          {/* Empty Search Overlay if No Hazards Match */}
+          {filteredReports.length === 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 450,
+                background: 'rgba(11, 17, 32, 0.94)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: '12px',
+                padding: '24px 32px',
+                textAlign: 'center',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)'
+              }}
+            >
+              <AlertTriangle size={32} color="#F59E0B" style={{ margin: '0 auto 12px auto' }} />
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#F8FAFC', marginBottom: '6px' }}>
+                No Hazards Found
               </div>
+              <p style={{ fontSize: '0.8125rem', color: '#94A3B8', margin: '0 0 16px 0', maxWidth: '280px' }}>
+                No reported incidents match the current search query or filter parameters.
+              </p>
               <button
-                onClick={() => setSelectedReport(null)}
-                style={{ background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '4px' }}
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleResetFilters}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', margin: '0 auto' }}
               >
-                <X size={20} />
+                <RotateCcw size={13} />
+                <span>Reset Query Filters</span>
               </button>
             </div>
+          )}
 
-            {/* Badges */}
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <PriorityBadge level={selectedReport.priority_level} score={selectedReport.priority_score} />
-              <StatusBadge status={selectedReport.status} />
+          {/* Slide-over Inspection Detail Drawer */}
+          {selectedReport && (
+            <div className="incident-drawer">
+              {/* Drawer Header */}
+              <div className="drawer-header">
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <h3 style={{ fontSize: '1.25rem', color: '#38BDF8', fontWeight: 800, margin: 0 }}>
+                      {selectedReport.report_code}
+                    </h3>
+                    {selectedReport.id.startsWith('demo-') || selectedReport.id.startsWith('rep-00') ? (
+                      <span className="sample-tag">Sample Demo</span>
+                    ) : (
+                      <span className="user-tag">User Added</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#F1F5F9', letterSpacing: '0.02em' }}>
+                    {selectedReport.hazard_type.replace(/_/g, ' ').toUpperCase()}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="drawer-close-btn"
+                  onClick={() => setSelectedReport(null)}
+                  title="Close inspection panel"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Drawer Content */}
+              <div className="drawer-body">
+                {/* Priority & Status Badges */}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <PriorityBadge level={selectedReport.priority_level} score={selectedReport.priority_score} />
+                  <StatusBadge status={selectedReport.status} />
+                </div>
+
+                {/* Photo Evidence if Present */}
+                {selectedReport.image_url && (
+                  <div className="drawer-image-frame">
+                    <span className="drawer-image-tag">EVIDENCE CAPTURE</span>
+                    <img
+                      src={selectedReport.image_url}
+                      alt={selectedReport.hazard_type}
+                      className="drawer-image"
+                    />
+                  </div>
+                )}
+
+                {/* Spatial Position & Narrative */}
+                <div className="drawer-section-card">
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '0.75rem', color: '#94A3B8', marginBottom: '8px' }}>
+                    <MapPin size={15} color="#38BDF8" style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <span style={{ fontWeight: 600, color: '#F8FAFC' }}>{selectedReport.location_name}</span>
+                  </div>
+                  <div style={{ fontSize: '0.6875rem', color: '#64748B', fontFamily: 'monospace', marginBottom: '8px' }}>
+                    LAT {selectedReport.latitude.toFixed(4)} • LNG {selectedReport.longitude.toFixed(4)}
+                  </div>
+                  <p style={{ fontSize: '0.8125rem', color: '#CBD5E1', margin: 0, lineHeight: 1.5 }}>
+                    {selectedReport.description}
+                  </p>
+                </div>
+
+                {/* Corridor & Severity Assessment Metrics */}
+                <div className="drawer-metric-grid">
+                  <div className="drawer-metric-item">
+                    <span className="drawer-metric-label">SEVERITY</span>
+                    <span className="drawer-metric-value">{selectedReport.severity.toUpperCase()}</span>
+                  </div>
+                  <div className="drawer-metric-item">
+                    <span className="drawer-metric-label">ROADWAY TYPE</span>
+                    <span className="drawer-metric-value">{selectedReport.traffic_exposure.toUpperCase()}</span>
+                  </div>
+                  <div className="drawer-metric-item" style={{ gridColumn: 'span 2' }}>
+                    <span className="drawer-metric-label">SURROUNDING VULNERABILITY</span>
+                    <span className="drawer-metric-value">
+                      {selectedReport.vulnerability_level.replace(/_/g, ' ').toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="drawer-actions">
+                  {/* Priority Explainer Button */}
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => setIsExplaining(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      padding: '10px 14px'
+                    }}
+                  >
+                    <Calculator size={15} color="#38BDF8" />
+                    <span>Explain Priority Score ({selectedReport.priority_score}/100)</span>
+                  </button>
+
+                  {/* Track Status Direct Link */}
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => onNavigate(`/track/${selectedReport.report_code}`)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      padding: '10px 14px'
+                    }}
+                  >
+                    <span>View Resolution Timeline</span>
+                    <ArrowRight size={15} />
+                  </button>
+                </div>
+              </div>
             </div>
-
-            {/* Photo Evidence if present */}
-            {selectedReport.image_url && (
-              <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #1F2937' }}>
-                <img
-                  src={selectedReport.image_url}
-                  alt={selectedReport.hazard_type}
-                  style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
-                />
-              </div>
-            )}
-
-            {/* Location & Hazard Summary */}
-            <div style={{ backgroundColor: '#0F172A', border: '1px solid #1E293B', borderRadius: '8px', padding: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '0.75rem', color: '#94A3B8', marginBottom: '8px' }}>
-                <MapPin size={14} color="#38BDF8" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span>{selectedReport.location_name}</span>
-              </div>
-              <p style={{ fontSize: '0.8125rem', color: '#CBD5E1', margin: 0, lineHeight: 1.4 }}>
-                {selectedReport.description}
-              </p>
-            </div>
-
-            {/* Context Metrics */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.75rem', color: '#94A3B8' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Severity Assessment:</span>
-                <strong style={{ color: '#F1F5F9' }}>{selectedReport.severity.toUpperCase()}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Corridor Context:</span>
-                <strong style={{ color: '#F1F5F9' }}>{selectedReport.traffic_exposure.toUpperCase()}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Surrounding Zone:</span>
-                <strong style={{ color: '#F1F5F9' }}>{selectedReport.vulnerability_level.replace('_', ' ').toUpperCase()}</strong>
-              </div>
-            </div>
-
-            {/* Priority Explainer Button */}
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => setIsExplaining(true)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-            >
-              <Calculator size={14} color="#38BDF8" />
-              <span>Explain Priority Score ({selectedReport.priority_score}/100)</span>
-            </button>
-
-            {/* Track Status Direct Link */}
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => onNavigate(`/track/${selectedReport.report_code}`)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-            >
-              <span>View Resolution Timeline</span>
-              <ArrowRight size={14} />
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Explainer Modal */}

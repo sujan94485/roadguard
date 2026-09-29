@@ -1,6 +1,7 @@
 import React from 'react';
 import { ReportForm } from '../components/reports/ReportForm';
-import { ShieldCheck, Info } from 'lucide-react';
+import '../styles/report.css';
+import { AlertTriangle, Radio } from 'lucide-react';
 
 interface ReportHazardPageProps {
   onNavigate: (route: string) => void;
@@ -8,44 +9,59 @@ interface ReportHazardPageProps {
 
 export const ReportHazardPage: React.FC<ReportHazardPageProps> = ({ onNavigate }) => {
   return (
-    <div className="container-narrow" style={{ padding: '36px 16px' }}>
-      {/* Header */}
+    <div className="container-narrow" style={{ paddingTop: '36px', paddingBottom: '60px' }}>
+      {/* 1. Header */}
       <div style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-          <ShieldCheck size={20} color="#38BDF8" />
-          <span style={{ fontSize: '0.8125rem', color: '#38BDF8', fontWeight: 700, textTransform: 'uppercase' }}>
-            Citizen Reporting
+        {/* Civic Badge Pill */}
+        <div className="intake-header-badge">
+          <span className="live-beacon" />
+          <span style={{ fontSize: '0.71875rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#CBD5E1' }}>
+            CITIZEN REPORTING TERMINAL
+          </span>
+          <span
+            style={{
+              fontSize: '0.625rem',
+              fontWeight: 700,
+              padding: '1px 6px',
+              borderRadius: '4px',
+              backgroundColor: 'rgba(56, 189, 248, 0.15)',
+              color: '#38BDF8',
+              border: '1px solid rgba(56, 189, 248, 0.3)'
+            }}
+          >
+            MUNICIPAL INTAKE
           </span>
         </div>
-        <h1 style={{ fontSize: '1.875rem', marginBottom: '8px' }}>Report a Road Safety Hazard</h1>
-        <p style={{ color: '#94A3B8', fontSize: '0.9375rem', lineHeight: 1.5 }}>
-          Submit details and photos of road surface defects, dark corridors, or damaged traffic infrastructure.
-          Reports are prioritized using an objective, rule-based formula designed for municipal workflows.
+
+        {/* Editorial Headline */}
+        <h1 className="intake-title">
+          Report a Road Safety Hazard
+        </h1>
+
+        {/* Supporting Text with Status Telemetry */}
+        <p className="intake-subtitle">
+          Submit verified details, location coordinates, and photographic proof of road defects. All reports are processed through an explainable, rule-based priority engine for municipal public works triage.
         </p>
+
+        {/* Live Intake Status Badge */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#64748B' }}>
+          <Radio size={13} color="#34D399" />
+          <span>Active Session • Ready for Automated Rule-Based Triage</span>
+        </div>
       </div>
 
-      {/* Emergency Advisory Banner */}
-      <div
-        style={{
-          backgroundColor: '#0F172A',
-          border: '1px solid #1E293B',
-          borderRadius: '8px',
-          padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '24px',
-          fontSize: '0.8125rem',
-          color: '#CBD5E1'
-        }}
-      >
-        <Info size={16} color="#38BDF8" style={{ flexShrink: 0 }} />
-        <span>
-          <strong>Emergency Note:</strong> For immediate danger, active collisions, or live electrical hazards, contact local emergency services before submitting an infrastructure report.
-        </span>
+      {/* 2. Emergency Advisory Banner */}
+      <div className="intake-advisory-banner">
+        <AlertTriangle size={17} color="#F59E0B" style={{ flexShrink: 0, marginTop: '2px' }} />
+        <div>
+          <strong style={{ color: '#F8FAFC' }}>Emergency Advisory: </strong>
+          <span>
+            For active collisions, downed live electrical wires, or immediate life-threatening road hazards, contact emergency services (112) immediately before logging an infrastructure work order.
+          </span>
+        </div>
       </div>
 
-      {/* Form */}
+      {/* 3. Guided Report Form */}
       <ReportForm
         onSuccess={reportCode => {
           onNavigate(`/track/${reportCode}`);

@@ -16,7 +16,7 @@ export const SafetyMap: React.FC<SafetyMapProps> = ({
   reports,
   selectedReportId,
   onSelectReport,
-  height = '600px',
+  height = '620px',
   zoom = DEFAULT_MAP_ZOOM,
   center = DEFAULT_MAP_CENTER
 }) => {
@@ -29,14 +29,17 @@ export const SafetyMap: React.FC<SafetyMapProps> = ({
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
+    const initialCenter = center || DEFAULT_MAP_CENTER;
+    const initialZoom = zoom || DEFAULT_MAP_ZOOM;
+
     const map = L.map(mapContainerRef.current, {
-      center,
-      zoom,
+      center: initialCenter,
+      zoom: initialZoom,
       zoomControl: true,
       attributionControl: true
     });
 
-    // Reliable, standard OpenStreetMap tiles (No API key required)
+    // Reliable, standard OpenStreetMap tiles with dark civic-tech integration filter
     L.tileLayer(OPENSTREETMAP_PROVIDER.url, {
       attribution: OPENSTREETMAP_PROVIDER.attribution,
       maxZoom: OPENSTREETMAP_PROVIDER.maxZoom,
@@ -56,7 +59,7 @@ export const SafetyMap: React.FC<SafetyMapProps> = ({
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, [zoom]);
+  }, [center, zoom]);
 
   // Update Markers when reports or selection changes
   useEffect(() => {
@@ -76,6 +79,13 @@ export const SafetyMap: React.FC<SafetyMapProps> = ({
       });
     };
 
+    const priorityColors: Record<string, string> = {
+      critical: '#EF4444',
+      high: '#F97316',
+      medium: '#F59E0B',
+      low: '#10B981'
+    };
+
     reports.forEach(report => {
       const isSelected = report.id === selectedReportId;
       const marker = L.marker([report.latitude, report.longitude], {
@@ -83,25 +93,28 @@ export const SafetyMap: React.FC<SafetyMapProps> = ({
         title: `${report.report_code}: ${report.hazard_type}`
       });
 
-      // Custom Popup HTML
+      // Dark obsidian popup HTML
       const isDemo = report.id.startsWith('demo-') || report.id.startsWith('rep-00');
+      const pColor = priorityColors[report.priority_level] || '#38BDF8';
+      const statusLabel = report.status.replace(/_/g, ' ');
+
       const popupHtml = `
-        <div style="font-family: inherit; font-size: 0.8125rem; min-width: 180px;">
+        <div style="font-family: inherit; font-size: 0.8125rem; min-width: 200px; color: #F8FAFC;">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-            <strong style="color: #0284C7; font-size: 0.875rem;">${report.report_code}</strong>
-            <span style="font-weight: 700; text-transform: uppercase; font-size: 0.6875rem; padding: 2px 6px; border-radius: 4px; background: #E0F2FE; color: #0369A1;">
-              ${report.status.replace('_', ' ')}
+            <strong style="color: #38BDF8; font-size: 0.875rem; letter-spacing: 0.02em;">${report.report_code}</strong>
+            <span style="font-weight: 700; text-transform: uppercase; font-size: 0.625rem; padding: 2px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">
+              ${statusLabel}
             </span>
           </div>
-          <div style="font-weight: 600; color: #0F172A; margin-bottom: 4px;">
+          <div style="font-weight: 700; color: #F8FAFC; margin-bottom: 4px; font-size: 0.8125rem;">
             ${report.hazard_type.replace(/_/g, ' ').toUpperCase()}
           </div>
-          <div style="color: #64748B; font-size: 0.75rem; margin-bottom: 8px;">
+          <div style="color: #94A3B8; font-size: 0.75rem; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
             📍 ${report.location_name}
           </div>
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid #E2E8F0; padding-top: 6px;">
-            <span style="color: #475569;">Priority: <strong style="color: #D97706;">${report.priority_level.toUpperCase()} (${report.priority_score})</strong></span>
-            ${isDemo ? '<span style="font-size: 0.625rem; background: #F1F5F9; color: #64748B; padding: 1px 4px; border-radius: 3px;">DEMO</span>' : ''}
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 6px;">
+            <span style="color: #94A3B8;">Priority: <strong style="color: ${pColor};">${report.priority_level.toUpperCase()} (${report.priority_score})</strong></span>
+            ${isDemo ? '<span style="font-size: 0.5625rem; background: rgba(255, 255, 255, 0.1); color: #94A3B8; padding: 1px 4px; border-radius: 3px; font-weight: 700;">DEMO</span>' : ''}
           </div>
         </div>
       `;
@@ -118,57 +131,96 @@ export const SafetyMap: React.FC<SafetyMapProps> = ({
     });
   }, [reports, selectedReportId, onSelectReport]);
 
+  // Center on selected report if set
+  useEffect(() => {
+    if (!mapInstanceRef.current || !selectedReportId) return;
+    const selected = reports.find(r => r.id === selectedReportId);
+    if (selected) {
+      mapInstanceRef.current.panTo([selected.latitude, selected.longitude], { animate: true, duration: 0.4 });
+    }
+  }, [selectedReportId, reports]);
+
+  // Dynamic Telemetry Metrics derived strictly from existing report records
+  const criticalCount = reports.filter(r => r.priority_level === 'critical').length;
+  const highCount = reports.filter(r => r.priority_level === 'high').length;
+  const highRiskTotal = criticalCount + highCount;
+  const resolvedCount = reports.filter(r => r.status === 'resolved').length;
+  const activeCount = reports.filter(r => r.status !== 'resolved').length;
+
   return (
     <div
+      className="spatial-map-stage"
       style={{
         position: 'relative',
         width: '100%',
-        height,
-        borderRadius: '12px',
-        overflow: 'hidden',
-        border: '1px solid #1F2937'
+        height
       }}
     >
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
 
-      {/* Map Legend Overlay */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '16px',
-          right: '16px',
-          zIndex: 400,
-          backgroundColor: 'rgba(15, 23, 42, 0.92)',
-          backdropFilter: 'blur(4px)',
-          border: '1px solid #334155',
-          borderRadius: '8px',
-          padding: '8px 12px',
-          fontSize: '0.75rem',
-          color: '#F8FAFC',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '2px' }}>
-          <span style={{ fontWeight: 700, color: '#94A3B8' }}>Hazard Priority Levels</span>
-          <span style={{ fontSize: '0.625rem', color: '#38BDF8', backgroundColor: '#1E293B', padding: '1px 5px', borderRadius: '3px' }}>DEMO</span>
+      {/* Map Telemetry HUD Overlay (Top-Left) */}
+      <div className="map-hud-overlay">
+        <div className="map-hud-pill">
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#38BDF8', boxShadow: '0 0 6px #38BDF8' }} />
+          <span>MAP TELEMETRY:</span>
+          <span className="map-hud-pill-highlight">{reports.length} VISIBLE</span>
+          <span style={{ color: '#64748B' }}>|</span>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', boxShadow: '0 0 6px #EF4444' }} />
+          <span>HIGH RISK:</span>
+          <span style={{ fontWeight: 700, color: '#FCA5A5' }}>{highRiskTotal}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#EF4444' }} />
-          <span>Critical (85–100)</span>
+        <div className="map-hud-pill">
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#F59E0B', boxShadow: '0 0 6px #F59E0B' }} />
+          <span>ACTIVE:</span>
+          <span style={{ fontWeight: 700, color: '#FCD34D' }}>{activeCount}</span>
+          <span style={{ color: '#64748B' }}>|</span>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px #10B981' }} />
+          <span>RESOLVED:</span>
+          <span style={{ fontWeight: 700, color: '#86EFAC' }}>{resolvedCount}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#F97316' }} />
-          <span>High (65–84)</span>
+      </div>
+
+      {/* Risk Intelligence Legend (Bottom-Right) */}
+      <div className="spatial-legend-panel">
+        <div className="legend-header">
+          <span className="legend-title">RISK PRIORITY MATRIX</span>
+          <span className="legend-tag">DEMO</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#F59E0B' }} />
-          <span>Medium (40–64)</span>
+        
+        <div className="legend-item">
+          <div className="legend-item-left">
+            <span className="legend-dot" style={{ backgroundColor: '#EF4444', color: '#EF4444' }} />
+            <span>Critical</span>
+          </div>
+          <span className="legend-range">85–100</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10B981' }} />
-          <span>Low (0–39)</span>
+
+        <div className="legend-item">
+          <div className="legend-item-left">
+            <span className="legend-dot" style={{ backgroundColor: '#F97316', color: '#F97316' }} />
+            <span>High</span>
+          </div>
+          <span className="legend-range">65–84</span>
+        </div>
+
+        <div className="legend-item">
+          <div className="legend-item-left">
+            <span className="legend-dot" style={{ backgroundColor: '#F59E0B', color: '#F59E0B' }} />
+            <span>Medium</span>
+          </div>
+          <span className="legend-range">40–64</span>
+        </div>
+
+        <div className="legend-item">
+          <div className="legend-item-left">
+            <span className="legend-dot" style={{ backgroundColor: '#10B981', color: '#10B981' }} />
+            <span>Low</span>
+          </div>
+          <span className="legend-range">0–39</span>
+        </div>
+
+        <div className="legend-footer">
+          RULE-BASED SCORING
         </div>
       </div>
     </div>

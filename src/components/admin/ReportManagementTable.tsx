@@ -3,7 +3,7 @@ import { ReportRecord } from '../../types/database.types';
 import { PriorityBadge, StatusBadge } from '../common/Badge';
 import { PriorityExplainerModal } from '../common/PriorityExplainerModal';
 import { StatusUpdateModal } from './StatusUpdateModal';
-import { Calculator, Edit3, Eye, Search, Filter, AlertTriangle } from 'lucide-react';
+import { Calculator, Edit3, Eye, Search, Filter, RotateCcw, MapPin } from 'lucide-react';
 
 interface ReportManagementTableProps {
   reports: ReportRecord[];
@@ -27,6 +27,7 @@ export const ReportManagementTable: React.FC<ReportManagementTableProps> = ({
   // Filter Reports
   const filteredReports = reports.filter(r => {
     const matchesSearch =
+      searchQuery.trim() === '' ||
       r.report_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.location_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.hazard_type.toLowerCase().includes(searchQuery.toLowerCase());
@@ -37,42 +38,36 @@ export const ReportManagementTable: React.FC<ReportManagementTableProps> = ({
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
+  const hasActiveFilters = searchQuery.trim() !== '' || statusFilter !== 'all' || priorityFilter !== 'all';
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setPriorityFilter('all');
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Table Filter Controls */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '12px',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: '#111827',
-          padding: '14px 18px',
-          borderRadius: '8px',
-          border: '1px solid #1F2937'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '240px' }}>
-          <Search size={16} color="#94A3B8" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+      {/* 1. Incident Query Console */}
+      <div className="triage-query-console">
+        <div className="triage-search-wrap">
+          <Search size={15} className="triage-search-icon" />
           <input
             type="text"
-            className="form-control"
+            className="triage-search-input"
             placeholder="Search by Report ID, street, or hazard type..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            style={{ padding: '6px 12px', fontSize: '0.875rem' }}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="triage-filter-group">
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Filter size={14} color="#94A3B8" />
+            <Filter size={13} color="#94A3B8" />
             <select
-              className="form-control"
+              className="triage-filter-select"
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              style={{ padding: '6px 10px', fontSize: '0.8125rem', width: 'auto' }}
             >
               <option value="all">All Statuses</option>
               <option value="submitted">Submitted</option>
@@ -83,47 +78,52 @@ export const ReportManagementTable: React.FC<ReportManagementTableProps> = ({
           </div>
 
           <select
-            className="form-control"
+            className="triage-filter-select"
             value={priorityFilter}
             onChange={e => setPriorityFilter(e.target.value)}
-            style={{ padding: '6px 10px', fontSize: '0.8125rem', width: 'auto' }}
           >
             <option value="all">All Priorities</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="critical">Critical (85–100)</option>
+            <option value="high">High (65–84)</option>
+            <option value="medium">Medium (40–64)</option>
+            <option value="low">Low (0–39)</option>
           </select>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={handleResetFilters}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '38px', padding: '0 12px' }}
+              title="Reset query filters"
+            >
+              <RotateCcw size={12} />
+              <span>Reset</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Table Element */}
-      <div
-        className="table-responsive"
-        style={{
-          overflowX: 'auto',
-          backgroundColor: '#111827',
-          borderRadius: '8px',
-          border: '1px solid #1F2937'
-        }}
-      >
-        <table style={{ width: '100%', minWidth: '880px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+      {/* 2. Responsive Incident Triage Container */}
+      <div className="triage-table-card">
+        {/* A. Desktop Table (Screens >= 900px) */}
+        <table className="triage-desktop-table">
           <thead>
-            <tr style={{ backgroundColor: '#0B0F19', borderBottom: '1px solid #1F2937', color: '#94A3B8' }}>
-              <th style={{ padding: '12px 14px', fontWeight: 600 }}>Report ID</th>
-              <th style={{ padding: '12px 14px', fontWeight: 600 }}>Hazard</th>
-              <th style={{ padding: '12px 14px', fontWeight: 600 }}>Location</th>
-              <th style={{ padding: '12px 14px', fontWeight: 600 }}>Priority & Score</th>
-              <th style={{ padding: '12px 14px', fontWeight: 600 }}>Main Reasons for Priority</th>
-              <th style={{ padding: '12px 14px', fontWeight: 600 }}>Status</th>
-              <th style={{ padding: '12px 14px', fontWeight: 600, textAlign: 'right' }}>Actions</th>
+            <tr>
+              <th className="triage-th" style={{ width: '13%' }}>Report ID</th>
+              <th className="triage-th" style={{ width: '13%' }}>Hazard</th>
+              <th className="triage-th" style={{ width: '22%' }}>Location</th>
+              <th className="triage-th" style={{ width: '15%' }}>Priority & Score</th>
+              <th className="triage-th" style={{ width: '20%' }}>Main Reasons for Priority</th>
+              <th className="triage-th" style={{ width: '10%' }}>Status</th>
+              <th className="triage-th" style={{ width: '7%', textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredReports.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ padding: '32px', textAlign: 'center', color: '#94A3B8' }}>
-                  No road hazard reports found matching current filter criteria.
+                <td colSpan={7} style={{ padding: '36px', textAlign: 'center', color: '#94A3B8' }}>
+                  No road hazard reports found matching current query parameters.
                 </td>
               </tr>
             ) : (
@@ -133,22 +133,14 @@ export const ReportManagementTable: React.FC<ReportManagementTableProps> = ({
                 // Extract top 2 significant factors contributing to score
                 const topFactors = (report.priority_breakdown?.factors || [])
                   .filter(f => f.score > 0)
-                  .sort((a, b) => (b.score / b.maxScore) - (a.score / a.maxScore))
+                  .sort((a, b) => b.score / b.maxScore - a.score / a.maxScore)
                   .slice(0, 2);
 
                 return (
-                  <tr
-                    key={report.id}
-                    style={{
-                      borderBottom: '1px solid #1E293B',
-                      transition: 'background-color 0.15s ease'
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1E293B')}
-                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-                  >
-                    <td style={{ padding: '12px 14px', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                  <tr key={report.id} className="triage-row">
+                    <td className="triage-td" style={{ fontWeight: 700 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ color: '#38BDF8' }}>{report.report_code}</span>
+                        <span style={{ color: '#38BDF8', letterSpacing: '0.02em' }}>{report.report_code}</span>
                         {isDemo ? (
                           <span className="sample-tag">Sample</span>
                         ) : (
@@ -157,27 +149,31 @@ export const ReportManagementTable: React.FC<ReportManagementTableProps> = ({
                       </div>
                     </td>
 
-                    <td style={{ padding: '12px 14px', fontWeight: 600, color: '#F1F5F9', whiteSpace: 'nowrap' }}>
+                    <td className="triage-td" style={{ fontWeight: 600, color: '#F1F5F9' }}>
                       {report.hazard_type.replace(/_/g, ' ').toUpperCase()}
                     </td>
 
-                    <td style={{ padding: '12px 14px', color: '#CBD5E1', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {report.location_name}
+                    <td className="triage-td" style={{ color: '#CBD5E1', lineHeight: 1.4 }}>
+                      <div style={{ wordBreak: 'break-word' }}>
+                        {report.location_name}
+                      </div>
                     </td>
 
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td className="triage-td">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <PriorityBadge level={report.priority_level} score={report.priority_score} />
                         <button
+                          type="button"
                           onClick={() => setExplainingReport(report)}
                           style={{
                             background: 'transparent',
                             border: 'none',
                             color: '#94A3B8',
                             cursor: 'pointer',
-                            padding: '2px',
+                            padding: '3px',
                             display: 'flex',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            borderRadius: '4px'
                           }}
                           title="View exact mathematical factor breakdown"
                         >
@@ -186,13 +182,19 @@ export const ReportManagementTable: React.FC<ReportManagementTableProps> = ({
                       </div>
                     </td>
 
-                    {/* Main Reasons for Priority (Prominent Triage Driver) */}
-                    <td style={{ padding: '12px 14px', maxWidth: '260px' }}>
+                    {/* Main Reasons for Priority */}
+                    <td className="triage-td">
                       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {topFactors.map((f, i) => (
                           <span
                             key={i}
-                            className={`reason-chip ${report.priority_level === 'critical' ? 'reason-chip-critical' : report.priority_level === 'high' ? 'reason-chip-high' : ''}`}
+                            className={`reason-chip-badge ${
+                              report.priority_level === 'critical'
+                                ? 'critical'
+                                : report.priority_level === 'high'
+                                ? 'high'
+                                : ''
+                            }`}
                             title={`${f.factor}: ${f.detail} (${f.score}/${f.maxScore} pts)`}
                           >
                             {f.factor.replace('Civic ', '')}: +{f.score}
@@ -201,13 +203,14 @@ export const ReportManagementTable: React.FC<ReportManagementTableProps> = ({
                       </div>
                     </td>
 
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td className="triage-td">
                       <StatusBadge status={report.status} />
                     </td>
 
-                    <td style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <td className="triage-td" style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
                         <button
+                          type="button"
                           className="btn btn-secondary btn-sm"
                           style={{ padding: '4px 8px', fontSize: '0.75rem' }}
                           onClick={() => onSelectReport(report)}
@@ -218,6 +221,7 @@ export const ReportManagementTable: React.FC<ReportManagementTableProps> = ({
                         </button>
 
                         <button
+                          type="button"
                           className="btn btn-primary btn-sm"
                           style={{ padding: '4px 8px', fontSize: '0.75rem' }}
                           onClick={() => setUpdatingReport(report)}
@@ -234,6 +238,104 @@ export const ReportManagementTable: React.FC<ReportManagementTableProps> = ({
             )}
           </tbody>
         </table>
+
+        {/* B. Mobile/Tablet Responsive Cards (Screens < 900px, eliminates horizontal scrollbar) */}
+        <div className="triage-mobile-cards">
+          {filteredReports.length === 0 ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: '#94A3B8', fontSize: '0.875rem' }}>
+              No road hazard reports found matching current query parameters.
+            </div>
+          ) : (
+            filteredReports.map(report => {
+              const isDemo = report.id.startsWith('demo-') || report.id.startsWith('rep-00');
+              const topFactors = (report.priority_breakdown?.factors || [])
+                .filter(f => f.score > 0)
+                .sort((a, b) => b.score / b.maxScore - a.score / a.maxScore)
+                .slice(0, 2);
+
+              return (
+                <div key={report.id} className="triage-incident-card">
+                  <div className="incident-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <strong style={{ color: '#38BDF8', fontSize: '0.9375rem' }}>{report.report_code}</strong>
+                      {isDemo ? <span className="sample-tag">Sample</span> : <span className="user-tag">User</span>}
+                    </div>
+                    <StatusBadge status={report.status} />
+                  </div>
+
+                  <div className="incident-card-body">
+                    <div style={{ fontWeight: 700, color: '#F8FAFC', fontSize: '0.875rem' }}>
+                      {report.hazard_type.replace(/_/g, ' ').toUpperCase()}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '0.75rem', color: '#94A3B8' }}>
+                      <MapPin size={13} color="#38BDF8" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <span>{report.location_name}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <PriorityBadge level={report.priority_level} score={report.priority_score} />
+                        <button
+                          type="button"
+                          onClick={() => setExplainingReport(report)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#94A3B8',
+                            cursor: 'pointer',
+                            padding: '2px'
+                          }}
+                          title="Explain Priority"
+                        >
+                          <Calculator size={13} />
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        {topFactors.map((f, i) => (
+                          <span
+                            key={i}
+                            className={`reason-chip-badge ${
+                              report.priority_level === 'critical'
+                                ? 'critical'
+                                : report.priority_level === 'high'
+                                ? 'high'
+                                : ''
+                            }`}
+                          >
+                            +{f.score} {f.factor.replace('Civic ', '')}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="incident-card-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                      onClick={() => onSelectReport(report)}
+                    >
+                      <Eye size={13} />
+                      <span>Details</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                      onClick={() => setUpdatingReport(report)}
+                    >
+                      <Edit3 size={13} />
+                      <span>Update Status</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* Priority Explainer Modal */}

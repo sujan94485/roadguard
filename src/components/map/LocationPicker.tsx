@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { Crosshair, MapPin, Check } from 'lucide-react';
+import { Crosshair, MapPin, Check, Radio } from 'lucide-react';
 import { OPENSTREETMAP_PROVIDER, DEFAULT_MAP_CENTER } from '../../services/mapConfig';
 
 interface LocationPickerProps {
@@ -13,7 +13,7 @@ interface LocationPickerProps {
 export const LocationPicker: React.FC<LocationPickerProps> = ({
   latitude,
   longitude,
-  locationName,
+  locationName: _locationName,
   onChange
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -111,58 +111,65 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <MapPin size={16} color="#38BDF8" />
-          <span>Pin Hazard Location on Map</span>
-        </label>
+      {/* Header bar with Spatial Position Label & GPS Action */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+            <MapPin size={15} color="#38BDF8" />
+            <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#E2E8F0' }}>PIN HAZARD LOCATION</span>
+          </label>
+          <span
+            style={{
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: '0.625rem',
+              color: '#94A3B8',
+              backgroundColor: 'rgba(30, 41, 59, 0.6)',
+              padding: '2px 6px',
+              borderRadius: '4px'
+            }}
+          >
+            SPATIAL POSITION
+          </span>
+        </div>
+
         <button
           type="button"
           onClick={handleDetectGPS}
           disabled={isLocating}
           className="btn btn-secondary btn-sm"
-          style={{ fontSize: '0.75rem', padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '4px' }}
+          style={{
+            fontSize: '0.75rem',
+            padding: '5px 12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            borderColor: geoSuccess ? '#10B981' : 'rgba(56, 189, 248, 0.3)'
+          }}
         >
           {geoSuccess ? (
             <>
               <Check size={13} color="#10B981" />
-              <span>Location Locked</span>
+              <span style={{ color: '#6EE7B7' }}>GPS Coordinate Locked</span>
             </>
           ) : (
             <>
-              <Crosshair size={13} />
-              <span>{isLocating ? 'Locating...' : 'Use My GPS'}</span>
+              <Crosshair size={13} color="#38BDF8" />
+              <span>{isLocating ? 'Acquiring Satellites...' : 'Acquire My GPS'}</span>
             </>
           )}
         </button>
       </div>
 
-      <div
-        style={{
-          width: '100%',
-          height: '240px',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          border: '1px solid #374151',
-          position: 'relative'
-        }}
-      >
+      {/* Spatial Operations Map Container */}
+      <div className="spatial-map-container">
         <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '8px',
-            left: '8px',
-            zIndex: 400,
-            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-            backdropFilter: 'blur(4px)',
-            borderRadius: '4px',
-            padding: '4px 8px',
-            fontSize: '0.6875rem',
-            color: '#CBD5E1'
-          }}
-        >
-          Click map or drag pin ({latitude.toFixed(4)}, {longitude.toFixed(4)})
+
+        {/* Floating Telemetry Coordinates Badge */}
+        <div className="spatial-telemetry-badge">
+          <Radio size={12} color="#38BDF8" />
+          <span>
+            PINNED INCIDENT: {latitude.toFixed(4)}° N, {longitude.toFixed(4)}° E
+          </span>
         </div>
       </div>
     </div>
